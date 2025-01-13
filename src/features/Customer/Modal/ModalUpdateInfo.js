@@ -2,13 +2,15 @@ import React,{ useState , useEffect } from 'react'
 
 export default function ModalUpdateInfo({isOpen , onClose , onSubmit , profile}) {
     const [formData, setFormData] = useState({
-        customer_id: profile?.userId || '',
+        customer_id: profile?.userId,
         first_name: '',
         last_name: '',
         user_code: '',
         group_st: '',
         branch_st: '',
         tpye_st: '',
+        st_tpye:'',
+        levelST:''
     });
 
     const handleInputChange = (e) => {
@@ -84,6 +86,22 @@ export default function ModalUpdateInfo({isOpen , onClose , onSubmit , profile})
                     name="tpye_st"
                     placeholder="หลักสูตร"
                     value={formData.tpye_st}
+                    onChange={handleInputChange}
+                    className="border p-2 mb-2 w-full rounded-md"
+                />
+                <input
+                    type="text"
+                    name="st_tpye"
+                    placeholder="ประเภทนักศึกษา "
+                    value={formData.st_tpye}
+                    onChange={handleInputChange}
+                    className="border p-2 mb-2 w-full rounded-md"
+                />
+                <input
+                    type="numer"
+                    name="levelST"
+                    placeholder="นักศึกษาปีที่"
+                    value={formData.levelST}
                     onChange={handleInputChange}
                     className="border p-2 mb-2 w-full rounded-md"
                 />

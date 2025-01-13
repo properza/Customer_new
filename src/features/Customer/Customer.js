@@ -45,7 +45,7 @@ export default function Customer() {
         const referralCode = params.get('referral'); // ดึงค่า referral
         if (referralCode) {
             setReferral(referralCode);
-            //setIsReferralModalOpen(true); // เปิด Modal
+            setIsReferralModalOpen(true); // เปิด Modal
         }
     }, [location.search]);
 

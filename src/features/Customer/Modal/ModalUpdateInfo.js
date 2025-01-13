@@ -2,7 +2,7 @@ import React,{ useState , useEffect } from 'react'
 
 export default function ModalUpdateInfo({isOpen , onClose , onSubmit , profile}) {
     const [formData, setFormData] = useState({
-        customer_id: profile?.userId,
+        customer_id: profile?.userId || '',
         first_name: '',
         last_name: '',
         user_code: '',

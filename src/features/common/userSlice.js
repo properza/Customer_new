@@ -63,19 +63,18 @@ export const loginWithLine = createAsyncThunk(
 
 export const updateinfo = createAsyncThunk(
   "user/updateinfos",
-  async ({ formData }, { getState, rejectWithValue }) => {
+  async ({ formData }, { rejectWithValue }) => {
 
-    const url = Updateinfo;
+    const url = Updateinfo; // ปลายทางของ API, อาจเป็นเช่น "/api/user/update"
 
     try {
       const response = await axios.put(url, formData, {
         headers: {
-          'Content-Type': 'application/json'
         },
       });
       return response.data;
     } catch (error) {
-      console.error("Error response:", error.response); // Log the error response
+      console.error("Error response:", error.response);
       if (error.response) {
         return rejectWithValue(error.response.data);
       } else {
@@ -85,6 +84,7 @@ export const updateinfo = createAsyncThunk(
     }
   }
 );
+
 
 export const upFaceurl = createAsyncThunk(
   "user/upFaceurls",

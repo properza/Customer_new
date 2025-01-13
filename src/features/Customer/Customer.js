@@ -156,7 +156,7 @@ export default function Customer() {
     };
 
     const handleModalSubmit = (data) => {
-        dispatch(updateinfo({ data }))
+        dispatch(updateinfo(data))
             .unwrap()
             .then((res) => {
                 Swal.fire({

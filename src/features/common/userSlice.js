@@ -29,36 +29,36 @@ function mobileCheck() {
 
 export const loginWithLine = createAsyncThunk(
   "user/loginWithLine",
-  // async (_, { rejectWithValue, dispatch }) => {
-  //   try {
-  //     const urlParams = new URLSearchParams(window.location.search);
-  //     const redirected = urlParams.get("redirected");
+  async (_, { rejectWithValue, dispatch }) => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirected = urlParams.get("redirected");
 
-  //     if (mobileCheck() && !redirected) {
-  //       window.location.href = "line://app/2002511864-Lw8l8Jo8?redirected=true";
-  //       return;
-  //     }
+      if (mobileCheck() && !redirected) {
+        window.location.href = "line://app/2002511864-Lw8l8Jo8?redirected=true";
+        return;
+      }
 
-  //     await liff.init({ liffId: "2002511864-Lw8l8Jo8" });
+      await liff.init({ liffId: "2002511864-Lw8l8Jo8" });
 
-  //     if (!liff.isLoggedIn()) {
-  //       liff.login();
-  //       return;
-  //     }
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
 
-  //     const profile = await liff.getProfile();
-  //     console.log("Profile retrieved:", profile);
+      const profile = await liff.getProfile();
+      console.log("Profile retrieved:", profile);
 
-  //     // Dispatch getuser with profile
-  //     dispatch(getuser({ profile }));
+      // Dispatch getuser with profile
+      dispatch(getuser({ profile }));
 
-  //     return profile;
+      return profile;
 
-  //   } catch (error) {
-  //     console.error("Login error:", error);
-  //     return rejectWithValue(error.message || "Failed to login with LINE");
-  //   }
-  // }
+    } catch (error) {
+      console.error("Login error:", error);
+      return rejectWithValue(error.message || "Failed to login with LINE");
+    }
+  }
 );
 
 export const updateinfo = createAsyncThunk(

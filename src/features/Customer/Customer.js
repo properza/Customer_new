@@ -306,7 +306,7 @@ export default function Customer() {
                                                 <td className="border px-4 py-2">{index + 1}</td>
                                                 <td className="border px-4 py-2">{activity.activityName}</td>
                                                 <td className="border px-4 py-2">{customerinfo?.st_tpye}</td>
-                                                <td className="border px-4 py-2">{activity.created_at ? format(new Date(activity.created_at), "d MMM yyyy hh:mm", { locale: th }) : '-'}</td>
+                                                <td className="border px-4 py-2">{activity.created_at ? format(new Date(activity.created_at), "d MMM yyyy hh:mm", { locale: th }) : activity.status}</td>
                                                 <td className="border px-4 py-2">
                                                     <button
                                                         className='flex justify-center w-full cursor-pointer'

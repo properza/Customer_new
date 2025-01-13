@@ -155,8 +155,8 @@ export default function Customer() {
         setCurrentPage(selected + 1);
     };
 
-    const handleModalSubmit = (data) => {
-        dispatch(updateinfo(data))
+    const handleModalSubmit = (formData) => {
+        dispatch(updateinfo(formData))
             .unwrap()
             .then((res) => {
                 Swal.fire({
@@ -167,9 +167,7 @@ export default function Customer() {
                 });
                 setModalRegister(false);
                 dispatch(loginWithLine());
-                return () => {
-                    dispatch(resetState());
-                };
+                dispatch(resetState());
             })
             .catch((error) => {
                 console.error("Error creating event: ", error);

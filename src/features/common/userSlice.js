@@ -63,9 +63,9 @@ export const loginWithLine = createAsyncThunk(
 
 export const updateinfo = createAsyncThunk(
   "user/updateinfos",
-  async ({ formData }, { rejectWithValue }) => {
+  async (formData , { rejectWithValue }) => {
 
-    const url = Updateinfo; // ปลายทางของ API, อาจเป็นเช่น "/api/user/update"
+    const url = Updateinfo;
 
     try {
       const response = await axios.put(url, formData, {

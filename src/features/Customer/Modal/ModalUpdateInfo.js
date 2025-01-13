@@ -27,7 +27,7 @@ export default function ModalUpdateInfo({isOpen , onClose , onSubmit}) {
         if (profile) {
             setFormData(prevData => ({
                 ...prevData,
-                customer_id: profile.userId || '', // ตั้งค่า customer_id ใหม่
+                customer_id: profile.userId || '',
             }));
         }
     }, [profile]);
@@ -100,7 +100,7 @@ export default function ModalUpdateInfo({isOpen , onClose , onSubmit}) {
                     className="border p-2 mb-2 w-full rounded-md"
                 />
                 <input
-                    type="numer"
+                    type="number"
                     name="levelST"
                     placeholder="นักศึกษาปีที่"
                     value={formData.levelST}

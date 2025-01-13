@@ -1,6 +1,8 @@
 import React,{ useState , useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux';
 
-export default function ModalUpdateInfo({isOpen , onClose , onSubmit , profile}) {
+export default function ModalUpdateInfo({isOpen , onClose , onSubmit}) {
+    const { profile, customerinfo, isLoading, error } = useSelector((state) => state.user);
     const [formData, setFormData] = useState({
         customer_id: profile?.userId || '',
         first_name: '',

@@ -70,6 +70,7 @@ export const updateinfo = createAsyncThunk(
     try {
       const response = await axios.put(url, formData, {
         headers: {
+          'Content-Type': 'application/json'
         },
       });
       return response.data;

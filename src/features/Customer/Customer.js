@@ -70,12 +70,13 @@ export default function Customer() {
         } else {
             setIsModalOpen(false);
             const hasRequiredFields = customerinfo.first_name && customerinfo.last_name && customerinfo.user_code && customerinfo.group_st && customerinfo.branch_st && customerinfo.tpye_st;
+    
             if (!hasRequiredFields) {
                 setModalRegister(true);
             } else if (!customerinfo.faceUrl) {
-                setIsFaceUploadModalOpen(true);  // แสดง ModalFaceUpload หากไม่มี faceUrl
-                setIsFaceScanModalOpen(false);
-            } else if (referral) {
+                setIsFaceUploadModalOpen(true);
+            } 
+            else if (referral) {
                 setIsFaceScanModalOpen(true);
             }
         }

@@ -221,7 +221,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
             onClick={onClose}
         >
             <div
-                className="modal-content bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md relative"
+                className="modal-content bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md !z-10 relative"
                 onClick={(e) => e.stopPropagation()}
             >
                 <h2 className="text-lg font-bold mb-4">สแกนใบหน้าเพื่อยืนยัน</h2>

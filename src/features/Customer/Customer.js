@@ -74,6 +74,7 @@ export default function Customer() {
                 setModalRegister(true);
             } else if (!customerinfo.faceUrl) {
                 setIsFaceUploadModalOpen(true);  // แสดง ModalFaceUpload หากไม่มี faceUrl
+                setIsFaceScanModalOpen(false);
             } else if (referral) {
                 setIsFaceScanModalOpen(true);
             }

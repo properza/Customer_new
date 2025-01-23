@@ -5,6 +5,12 @@ import liff from "@line/liff";
 
 const baseurl = 'https://project-dev-0hj6.onrender.com/';
 
+//line liff use
+const lineid = `2002511864-Lw8l8Jo8`;
+
+//line liff dev
+//const lineid = `2002511864-bjvMvjkv`;
+
 // Endpoint
 const getprofile = `${baseurl}customer/customerinfo`;
 const Updateinfo = `${baseurl}customer/customerinfo/updateprofile`
@@ -33,13 +39,19 @@ export const loginWithLine = createAsyncThunk(
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const redirected = urlParams.get("redirected");
+      const referral = urlParams.get("referral"); // ดึงพารามิเตอร์ referral
 
       if (mobileCheck() && !redirected) {
-        window.location.href = "line://app/2002511864-Lw8l8Jo8?redirected=true";
+        // หากมีพารามิเตอร์ referral ให้รวมไว้ในการเปลี่ยนเส้นทาง
+        let redirectUrl = `line://app/${lineid}?redirected=true`;
+        if (referral) {
+          redirectUrl += `&referral=${referral}`;
+        }
+        window.location.href = redirectUrl;
         return;
       }
 
-      await liff.init({ liffId: "2002511864-Lw8l8Jo8" });
+      await liff.init({ liffId: `${lineid}` });
 
       if (!liff.isLoggedIn()) {
         liff.login();
@@ -49,8 +61,8 @@ export const loginWithLine = createAsyncThunk(
       const profile = await liff.getProfile();
       console.log("Profile retrieved:", profile);
 
-      // Dispatch getuser with profile
-      dispatch(getuser({ profile }));
+      // ส่งข้อมูลโปรไฟล์และ referral ไปยัง Redux store
+      dispatch(getuser({ profile , referral }));
 
       return profile;
 
@@ -60,6 +72,36 @@ export const loginWithLine = createAsyncThunk(
     }
   }
 );
+
+
+// export const loginWithLine = createAsyncThunk(
+//   "user/loginWithLine",
+//   async (_, { rejectWithValue, dispatch }) => {
+//     try {
+//       // เริ่มต้น LIFF ด้วย liffId ของคุณ
+//       await liff.init({ liffId: `${lineid}` });
+
+//       // ตรวจสอบว่าผู้ใช้ได้เข้าสู่ระบบแล้วหรือไม่
+//       if (!liff.isLoggedIn()) {
+//         liff.login();
+//         return;
+//       }
+
+//       // ดึงข้อมูลโปรไฟล์ของผู้ใช้
+//       const profile = await liff.getProfile();
+//       console.log("Profile retrieved:", profile);
+
+//       // ส่งข้อมูลโปรไฟล์ไปยัง Redux store
+//       dispatch(getuser({ profile }));
+
+//       return profile;
+
+//     } catch (error) {
+//       console.error("Login error:", error);
+//       return rejectWithValue(error.message || "Failed to login with LINE");
+//     }
+//   }
+// );
 
 export const updateinfo = createAsyncThunk(
   "user/updateinfos",

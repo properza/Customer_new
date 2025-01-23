@@ -16,6 +16,9 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     const [hasVerified, setHasVerified] = useState(false);
     const [capturedImage, setCapturedImage] = useState(null);
     const [referenceImage, setReferenceImage] = useState(null);
+    const [retryCount, setRetryCount] = useState(0);
+    const [isBrowserSupported, setIsBrowserSupported] = useState(true);
+    const maxRetries = 3; // จำนวนครั้งสูงสุดในการลองใหม่
 
     useEffect(() => {
         async function loadModels() {
@@ -34,13 +37,20 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     title: 'เกิดข้อผิดพลาดในการโหลดโมเดล',
                     text: 'กรุณาลองอีกครั้ง',
                 });
-                onClose();
+                handleCloseModal();
             }
         }
+
+        // ตรวจสอบการสนับสนุน getUserMedia
         if (isOpen) {
-            loadModels();
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                setIsBrowserSupported(false);
+            } else {
+                setIsBrowserSupported(true);
+                loadModels();
+            }
         }
-    }, [onClose, isOpen]);
+    }, [isOpen, onClose]);
 
     useEffect(() => {
         if (!isModelsLoaded || !faceUrl) return;
@@ -70,7 +80,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                         title: 'ไม่พบใบหน้าในรูปอ้างอิง',
                         text: 'กรุณาอัปโหลดรูปใบหน้าใหม่ที่มีใบหน้าชัดเจน',
                     });
-                    onClose();
+                    handleCloseModal();
                 }
             } catch (error) {
                 console.error("Error fetching reference image descriptor:", error);
@@ -79,7 +89,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     title: 'เกิดข้อผิดพลาดในการโหลดรูปอ้างอิง',
                     text: 'กรุณาตรวจสอบ URL หรือ Backend',
                 });
-                onClose();
+                handleCloseModal();
             }
         }
 
@@ -87,12 +97,12 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     }, [isModelsLoaded, faceUrl, onClose]);
 
     useEffect(() => {
-        if (isModelsLoaded && refDescriptor && isWebcamReady && !hasVerified && isOpen) {
+        if (isModelsLoaded && refDescriptor && isWebcamReady && !hasVerified && isOpen && isBrowserSupported) {
             console.log("All conditions met. Starting face verification.");
             verifyFace();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isModelsLoaded, refDescriptor, isWebcamReady, hasVerified, isOpen]);
+    }, [isModelsLoaded, refDescriptor, isWebcamReady, hasVerified, isOpen, isBrowserSupported]);
 
     const verifyFace = useCallback(async () => {
         setHasVerified(true); // Prevent re-verification
@@ -120,8 +130,22 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
             console.log("Video height:", video.videoHeight);
 
             if (video.videoWidth === 0 || video.videoHeight === 0) {
-                console.warn("Video not ready yet. Dimensions are zero. Retrying in 500ms...");
-                setTimeout(verifyFace, 500); // Retry after 500ms
+                if (retryCount < maxRetries) {
+                    console.warn("Video not ready yet. Dimensions are zero. Retrying in 500ms...");
+                    setTimeout(verifyFace, 500); // Retry after 500ms
+                    setRetryCount(prev => prev + 1);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ไม่สามารถเข้าถึงกล้องได้',
+                        text: 'กรุณาเปิดกล้องใหม่และลองอีกครั้ง',
+                        timer: 1500,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end',
+                        timerProgressBar: true
+                    });
+                }
                 return;
             }
 
@@ -138,7 +162,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     icon: 'error',
                     title: 'ไม่สามารถถ่ายรูปได้',
                 });
-                setHasVerified(false);
+                setHasVerified(false); // Allow re-verification
                 return;
             }
 
@@ -162,10 +186,16 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 .withFaceDescriptor();
 
             if (!probeDetection) {
-                // await Swal.fire({
-                //     icon: 'error',
-                //     title: 'ไม่พบใบหน้าในรูปที่ถ่าย',
-                // });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ไม่พบใบหน้าในรูปที่ถ่าย',
+                    text: 'กรุณาถ่ายรูปใหม่ที่มีใบหน้าชัดเจน',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
+                });
                 setHasVerified(false); // Allow re-verification
                 setCapturedImage(null); // Reset captured image
                 return;
@@ -184,16 +214,23 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     title: 'ใบหน้าตรงกัน!',
                     showConfirmButton: false,
                     timer: 1500,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
                 });
-                onClose();
+                handleCloseModal();
                 onSuccess();
             } else {
-                // await Swal.fire({
-                //     icon: 'error',
-                //     title: 'ใบหน้าไม่ตรงกัน!',
-                //     showConfirmButton: false,
-                //     timer: 1500,
-                // });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ใบหน้าไม่ตรงกัน!',
+                    text: 'กรุณาถ่ายรูปใหม่',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
+                });
                 setHasVerified(false); // Allow re-verification
                 setCapturedImage(null); // Reset captured image
             }
@@ -203,14 +240,35 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 icon: 'error',
                 title: 'เกิดข้อผิดพลาดในการตรวจสอบใบหน้า',
                 text: 'กรุณาลองอีกครั้ง',
+                timer: 1500,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end',
+                timerProgressBar: true
             });
             setHasVerified(false); // Allow re-verification
         }
-    }, [refDescriptor, onClose, onSuccess]);
+    }, [refDescriptor, onClose, onSuccess, retryCount]);
 
     const handleUserMedia = () => {
         console.log("Webcam is ready");
         setIsWebcamReady(true);
+    };
+
+    // ฟังก์ชันรีเซ็ตสถานะเมื่อปิดโมดัล
+    const handleCloseModal = () => {
+        onClose();
+        setRetryCount(0);
+        setHasVerified(false);
+        setCapturedImage(null);
+        setReferenceImage(null);
+    };
+
+    // ฟังก์ชันสำหรับเปิดแท็บใหม่ในเว็บเบราว์เซอร์ที่รองรับ
+    const openInSupportedBrowser = () => {
+        // เปิดแท็บใหม่ที่ URL ปัจจุบัน
+        window.open(window.location.href, '_blank');
+        handleCloseModal();
     };
 
     if (!isOpen) return null;
@@ -218,14 +276,25 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     return (
         <div
             className="modal-overlay fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
-            onClick={onClose}
+            onClick={handleCloseModal}
         >
             <div
                 className="modal-content bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md !z-10 relative"
                 onClick={(e) => e.stopPropagation()}
             >
                 <h2 className="text-lg font-bold mb-4">สแกนใบหน้าเพื่อยืนยัน</h2>
-                {!isModelsLoaded || !refDescriptor ? (
+                {!isBrowserSupported ? (
+                    <div className="text-center">
+                        <p>เบราว์เซอร์ของคุณไม่รองรับการเข้าถึงกล้องสำหรับการยืนยันใบหน้า</p>
+                        <p>โปรดเปิดในเว็บเบราว์เซอร์ที่รองรับ เช่น Google Chrome, Mozilla Firefox หรือ Safari</p>
+                        <button
+                            onClick={openInSupportedBrowser}
+                            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                            เปิดในเว็บเบราว์เซอร์ที่รองรับ
+                        </button>
+                    </div>
+                ) : (!isModelsLoaded || !refDescriptor ? (
                     <p>กำลังโหลดโมเดลหรือรูปอ้างอิง<span className="loading loading-dots loading-sm"></span></p>
                 ) : (
                     <>
@@ -239,15 +308,23 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                                 console.error("Webcam error:", error);
                                 Swal.fire({
                                     icon: 'error',
-                                    title: 'เกิดข้อผิดพลาดในการเข้าถึงกล้อง',
-                                    text: 'กรุณาเปิดกล้องและลองอีกครั้ง',
+                                    title: 'ไม่สามารถเข้าถึงกล้องได้',
+                                    text: 'กรุณาเปิดกล้องใหม่และลองอีกครั้ง',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'เปิดในเว็บเบราว์เซอร์ที่รองรับ',
+                                    cancelButtonText: 'ปิด',
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        openInSupportedBrowser();
+                                    }
                                 });
-                                onClose();
+                                handleCloseModal();
                             }}
                             className="mx-auto rounded-md transform scale-x-[-1]"
                             style={{ width: '100%', height: 'auto' }}
                         />
                         <p className="mt-4 text-center">ระบบกำลังตรวจจับใบหน้า...</p>
+                        {/* คุณสามารถเปิดใช้งานภาพที่ถ่ายและภาพอ้างอิงเพื่อดูได้ */}
                         {/* {capturedImage && (
                             <div className="mt-4">
                                 <h3 className="text-md font-semibold">ภาพที่ถ่าย:</h3>
@@ -261,9 +338,9 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                             </div>
                         )} */}
                     </>
-                )}
+                ))}
                 <button
-                    onClick={onClose}
+                    onClick={handleCloseModal}
                     className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
                 >
                     X

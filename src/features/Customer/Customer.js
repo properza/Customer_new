@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import ReactPaginate from 'react-paginate';
 import Top from './Top';
 import TitleCard from '../../components/Cards/TitleCard';
-import { loginWithLine, resetState, updateinfo, gethistory, upFaceurl, signin , getrewarddata } from '../common/userSlice';
+import { loginWithLine, resetState, updateinfo, gethistory, upFaceurl, signin , getrewarddata } from '../common/userSlice'; 
 import classNames from 'classnames';
 import Modal from './Modal/Modal';
 import ModalUpdateInfo from './Modal/ModalUpdateInfo';
@@ -22,14 +22,14 @@ export default function Customer() {
     const location = useLocation();
     const [activebtn, setactivebtn] = useState('history');
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [ModalRegister, setModalRegister] = useState(false)
+    const [ModalRegister, setModalRegister] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const historyData = useSelector(state => state.user.gethistorysData);
     const getreward = useSelector(state => state.user.getrewardslist);
     const [isModalDetailOpen, setIsModalDetailOpen] = useState(false);
     const [selectedActivity, setSelectedActivity] = useState(null);
     const [isFaceUploadModalOpen, setIsFaceUploadModalOpen] = useState(false);
-    const [referral, setReferral] = useState(null)
+    const [referral, setReferral] = useState(null);
     const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
     const [isFaceScanModalOpen, setIsFaceScanModalOpen] = useState(false);
 
@@ -37,15 +37,14 @@ export default function Customer() {
     const { profile, customerinfo, isLoading, error } = useSelector((state) => state.user);
 
     useEffect(() => {
-        loadModels().then(() => console.log("Models loaded"))
-    }, [])
+        loadModels().then(() => console.log("Models loaded"));
+    }, []);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const referralCode = params.get('referral'); // ดึงค่า referral
         if (referralCode) {
             setReferral(referralCode);
-            setIsReferralModalOpen(true); // เปิด Modal
         }
     }, [location.search]);
 
@@ -57,31 +56,37 @@ export default function Customer() {
     useEffect(() => {
         if (profile) {
             dispatch(gethistory({ page: currentPage, userID: profile.userId }));
-            dispatch(getrewarddata({ page: currentPage, userID: profile.userId })); // ปรับให้ส่ง userID ด้วยหากจำเป็น
+            dispatch(getrewarddata({ page: currentPage, userID: profile.userId }));
         }
-    }, [dispatch, profile, currentPage])
+    }, [dispatch, profile, currentPage]);
 
     console.log(historyData);
     console.log(getreward);
 
     useEffect(() => {
-        if (!customerinfo) {
-            setIsModalOpen(true);
-        } else {
-            setIsModalOpen(false);
+        if (customerinfo) {
             const hasRequiredFields = customerinfo.first_name && customerinfo.last_name && customerinfo.user_code && customerinfo.group_st && customerinfo.branch_st && customerinfo.tpye_st;
-    
             if (!hasRequiredFields) {
                 setModalRegister(true);
             } else if (!customerinfo.faceUrl) {
                 setIsFaceUploadModalOpen(true);
-            } 
-            else if (referral) {
+            }
+
+            // ลำดับการเปิดโมดัลตามที่ต้องการ
+            if (referral) {
                 setIsFaceScanModalOpen(true);
             }
+        } else {
+            setIsModalOpen(true);
         }
     }, [customerinfo, referral]);
 
+    // เพิ่ม useEffect เพื่อปิดโมดัลเมื่อมี customerinfo
+    useEffect(() => {
+        if (customerinfo) {
+            setIsModalOpen(false);
+        }
+    }, [customerinfo]);
 
     const handleAcceptReferral = (datarefer) => {
         const formdata = {
@@ -90,8 +95,8 @@ export default function Customer() {
                 "1",
                 "2"
             ]
-        } //datarefer
-        dispatch(signin({ eventid: '780001', formdata }))
+        }; // datarefer
+        dispatch(signin({ eventid: referral, formdata }))
             .unwrap()
             .then((res) => {
                 Swal.fire({
@@ -99,9 +104,13 @@ export default function Customer() {
                     title: 'ลงทะเบียนสำเร็จ',
                     timer: 1500,
                     showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
                 });
                 setIsFaceUploadModalOpen(false);
                 dispatch(loginWithLine());
+                setReferral(null); // รีเซ็ต referralCode
             })
             .catch((error) => {
                 console.error("Error uploading face image: ", error);
@@ -111,15 +120,19 @@ export default function Customer() {
                     text: 'กรุณากรอกข้อมูลให้ครบ',
                     timer: 1500,
                     showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
                 });
                 setIsFaceUploadModalOpen(false);
-            })
+                setReferral(null); // รีเซ็ต referralCode
+            });
         setIsReferralModalOpen(false);
     };
 
     const handleDeclineReferral = () => {
-
         setIsReferralModalOpen(false);
+        setReferral(null); // รีเซ็ต referralCode
     };
 
     const handleActivityClick = (activity) => {
@@ -133,25 +146,37 @@ export default function Customer() {
         dispatch(upFaceurl({ fileData: formData }))
             .unwrap()
             .then((res) => {
-                console.log("Upload success:", res)
+                console.log("Upload success:", res);
                 Swal.fire({
                     icon: 'success',
                     title: 'อัปโหลดรูปหน้าเรียบร้อย',
                     timer: 1500,
                     showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
                 });
                 setIsFaceUploadModalOpen(false);
+
+                // หลังจากอัปโหลดสำเร็จ ถ้ามี referralCode ให้เปิด face scan
+                if (referral) {
+                    setIsFaceScanModalOpen(true);
+                }
             })
             .catch((err) => {
-                console.error("Upload error:", err)
+                console.error("Upload error:", err);
                 Swal.fire({
                     icon: 'error',
                     title: 'อัปโหลดไม่สำเร็จ',
                     text: err?.message || 'กรุณาลองอีกครั้ง',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
                 });
             });
-    }
-
+    };
 
     const handlePageChange = ({ selected }) => {
         setCurrentPage(selected + 1);
@@ -165,7 +190,10 @@ export default function Customer() {
                     icon: 'success',
                     title: 'ลงทะเบียนสำเร็จ',
                     timer: 1500,
-                    showConfirmButton: false
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
                 });
                 setModalRegister(false);
                 dispatch(loginWithLine());
@@ -178,7 +206,10 @@ export default function Customer() {
                     title: 'ลงทะเบียนไม่สำเร็จ',
                     text: 'กรุณากรอกข้อมูลให้ครบ',
                     timer: 1500,
-                    showConfirmButton: false
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
                 });
                 setModalRegister(true);
             });
@@ -193,10 +224,18 @@ export default function Customer() {
     useEffect(() => {
         if (error) {
             console.error("Error:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'ข้อผิดพลาด',
+                text: error,
+                timer: 1500,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end',
+                timerProgressBar: true
+            });
         }
     }, [error]);
-
-
 
     const icons = (
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="green" className="bi bi-coin" viewBox="0 0 16 16">
@@ -210,8 +249,6 @@ export default function Customer() {
     const iconView = <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M14.3333 15.5L9.08333 10.25C8.66667 10.5833 8.1875 10.8472 7.64583 11.0417C7.10417 11.2361 6.52778 11.3333 5.91667 11.3333C4.40278 11.3333 3.12153 10.809 2.07292 9.76042C1.02431 8.71181 0.5 7.43056 0.5 5.91667C0.5 4.40278 1.02431 3.12153 2.07292 2.07292C3.12153 1.02431 4.40278 0.5 5.91667 0.5C7.43056 0.5 8.71181 1.02431 9.76042 2.07292C10.809 3.12153 11.3333 4.40278 11.3333 5.91667C11.3333 6.52778 11.2361 7.10417 11.0417 7.64583C10.8472 8.1875 10.5833 8.66667 10.25 9.08333L15.5 14.3333L14.3333 15.5ZM5.91667 9.66667C6.95833 9.66667 7.84375 9.30208 8.57292 8.57292C9.30208 7.84375 9.66667 6.95833 9.66667 5.91667C9.66667 4.875 9.30208 3.98958 8.57292 3.26042C7.84375 2.53125 6.95833 2.16667 5.91667 2.16667C4.875 2.16667 3.98958 2.53125 3.26042 3.26042C2.53125 3.98958 2.16667 4.875 2.16667 5.91667C2.16667 6.95833 2.53125 7.84375 3.26042 8.57292C3.98958 9.30208 4.875 9.66667 5.91667 9.66667Z" fill="#1D1B20" />
                     </svg>;
-
-    
 
     return (
         <>
@@ -322,7 +359,6 @@ export default function Customer() {
                                         <tr>
                                             <td colSpan="5" className="text-center py-4">ไม่มีข้อมูล</td>
                                         </tr>
-
                                     }
                                 </tbody>
                             </table>
@@ -358,21 +394,21 @@ export default function Customer() {
                     <TitleCard title={'แลกสิ่งของ'} title2={`ทั้งหมด ${getreward.meta?.total || 0} รายการ`} topMargin={'mt-1'}>
                         <div className="overflow-auto h-[45vh]">
                             {getreward.data && getreward.data.length > 0 ? (<div className='grid grid-cols-2 gap-5'>
-                                        {getreward.data.map((reward, index) => (
-                                            <div key={reward.id} className='border shadow-lg rounded-md p-5 '>
-                                                <div className="my-1">
-                                                    <img src={reward.rewardUrl} alt="" className='w-40 h-40 mb-2 mx-auto'/>
+                                {getreward.data.map((reward, index) => (
+                                    <div key={reward.id} className='border shadow-lg rounded-md p-5 '>
+                                        <div className="my-1">
+                                            <img src={reward.rewardUrl} alt="" className='w-35 h-35 mb-2 mx-auto'/>
 
-                                                    <p>{reward.reward_name}</p>
-                                                    <p>มีจำนวน : {reward.amount} ชิ้น/อัน</p>
-                                                    <p>แต้มที่ต้องการ : {reward.points_required || '-'}</p>
-                                                </div>
+                                            <p>{reward.reward_name}</p>
+                                            <p>มีจำนวน : {reward.amount} ชิ้น/อัน</p>
+                                            <p>แต้มที่ต้องการ : {reward.points_required || '-'}</p>
+                                        </div>
 
-                                                    <button className="bg-blue-500 text-white px-3 py-1 mt-2 rounded-md w-full hover:bg-blue-400">
-                                                        แลก
-                                                    </button>
-                                            </div>
-                                        ))}
+                                        <button className="bg-blue-500 text-white px-3 py-1 mt-2 rounded-md w-full hover:bg-blue-400">
+                                            แลก
+                                        </button>
+                                    </div>
+                                ))}
                             </div>) : (
                                 <p className="text-center mt-4">ไม่มีข้อมูลรางวัล</p>
                             )}
@@ -418,6 +454,7 @@ export default function Customer() {
                     activity={selectedActivity}
                 />
 
+                {/* Referral Modal */}
                 <Modal isOpen={isReferralModalOpen} onClose={handleDeclineReferral}>
                     <div className="p-4">
                         <h2 className="text-lg font-bold mb-4">คำเชิญเข้าร่วมกิจกรรม</h2>
@@ -439,14 +476,15 @@ export default function Customer() {
                     </div>
                 </Modal>
 
+                {/* Loading Modal */}
                 <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                     <div className="flex flex-col items-center">
-                        {/* Loading Spinner */}
                         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"></div>
                         <p>กำลังโหลด...</p>
                     </div>
                 </Modal>
 
+                {/* Face Upload Modal */}
                 <ModalFaceUpload
                     isOpen={isFaceUploadModalOpen}
                     onClose={() => setIsFaceUploadModalOpen(false)}
@@ -454,14 +492,16 @@ export default function Customer() {
                     profile={profile}
                 />
 
+                {/* Face Scan Modal */}
                 <ModalFaceScan
                     isOpen={isFaceScanModalOpen}
                     onClose={() => setIsFaceScanModalOpen(false)}
                     faceUrl={customerinfo?.faceUrl}
                     onSuccess={handleFaceScanSuccess}
                 />
-
             </div>
+
+            {/* Registration Modal */}
             <ModalUpdateInfo
                 isOpen={ModalRegister}
                 onClose={() => setModalRegister(false)}

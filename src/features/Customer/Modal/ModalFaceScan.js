@@ -91,7 +91,10 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess ,inSuccess }) {
                     icon: 'error',
                     title: 'เกิดข้อผิดพลาดในการโหลดรูปอ้างอิง',
                     text: 'กรุณาตรวจสอบ URL หรือ Backend',
+                    timer:1500,
+                    showConfirmButton:false
                 });
+                inSuccess();
                 handleCloseModal();
             }
         }

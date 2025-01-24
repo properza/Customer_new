@@ -95,7 +95,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess ,inSuccess }) {
                     showConfirmButton:false
                 });
                 inSuccess();
-                handleCloseModal();
+                // handleCloseModal();
             }
         }
 

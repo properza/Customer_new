@@ -8,7 +8,7 @@ const videoConstraints = {
     facingMode: 'user',
 };
 
-function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
+function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess ,inSuccess }) {
     const webcamRef = useRef(null);
     const [isModelsLoaded, setIsModelsLoaded] = useState(false);
     const [refDescriptor, setRefDescriptor] = useState(null);
@@ -79,7 +79,10 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                         icon: 'error',
                         title: 'ไม่พบใบหน้าในรูปอ้างอิง',
                         text: 'กรุณาอัปโหลดรูปใบหน้าใหม่ที่มีใบหน้าชัดเจน',
+                        timer:1500,
+                        showConfirmButton:false
                     });
+                    inSuccess();
                     handleCloseModal();
                 }
             } catch (error) {
@@ -196,6 +199,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     position: 'top-end',
                     timerProgressBar: true
                 });
+                
                 setHasVerified(false); // Allow re-verification
                 setCapturedImage(null); // Reset captured image
                 return;

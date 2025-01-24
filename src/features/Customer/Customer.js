@@ -220,6 +220,10 @@ export default function Customer() {
         setIsReferralModalOpen(true);
     };
 
+    const handleFaceResetUpload =() =>{
+        setIsFaceUploadModalOpen(true);
+    };
+
     // Handle errors or loading states as needed
     useEffect(() => {
         if (error) {
@@ -498,6 +502,7 @@ export default function Customer() {
                     onClose={() => setIsFaceScanModalOpen(false)}
                     faceUrl={customerinfo?.faceUrl}
                     onSuccess={handleFaceScanSuccess}
+                    incSuccess={handleFaceResetUpload}
                 />
             </div>
 

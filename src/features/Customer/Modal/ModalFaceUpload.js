@@ -73,7 +73,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
 
             if (detections.length === 1) {
                 const isClear = await isImageClear(video);
-                setStatus(isClear ? 'ใช้ได้' : 'ไม่ใช้ได้');
+                setStatus(isClear ? 'ใช้ได้' : 'ใบหน้าหรือภาพเบลอ');
             } else {
                 setStatus('ไม่พบใบหน้าหรือพบมากกว่า 1 ใบหน้า');
             }
@@ -118,10 +118,9 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
     const handleCapture = () => {
         if (webcamRef.current) {
             const screenshot = webcamRef.current.getScreenshot();
-            // สร้าง image element เพื่อกลับการสะท้อน
             const img = new Image();
             img.src = screenshot;
-            img.onload = () => {
+            img.onload = async () => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 canvas.width = img.width;
@@ -130,7 +129,27 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                 ctx.drawImage(img, -img.width, 0);
                 const correctedScreenshot = canvas.toDataURL('image/jpeg');
                 setImageSrc(correctedScreenshot);
-                setCountdown(null); // รีเซ็ตนับถอยหลังหลังถ่ายรูป
+
+                // ตรวจสอบใบหน้าในภาพ
+                const probeImgElement = await faceapi.fetchImage(correctedScreenshot);
+                const detectionOptions = new faceapi.TinyFaceDetectorOptions({
+                    inputSize: 512,
+                    scoreThreshold: 0.5,
+                });
+
+                const probeDetection = await faceapi
+                    .detectSingleFace(probeImgElement, detectionOptions)
+                    .withFaceLandmarks()
+                    .withFaceDescriptor();
+
+                if (!probeDetection) {
+                    setStatus('ไม่พบใบหน้าในภาพที่ถ่าย'); // เปลี่ยนสถานะเมื่อไม่พบใบหน้า
+                    setCapturedImage(null); // รีเซ็ตภาพที่ถ่าย
+                    return;
+                }
+
+                // หากพบใบหน้าในภาพ
+                setStatus('ใช้ได้'); // สถานะเมื่อใบหน้าถูกตรวจพบ
             };
         }
     };
@@ -213,9 +232,8 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                         <div className="mt-2 text-center">
                             {status && (
                                 <p
-                                    className={`${
-                                        status === 'ใช้ได้' ? 'text-green-500' : 'text-red-500'
-                                    }`}
+                                    className={`${status === 'ใช้ได้' ? 'text-green-500' : 'text-red-500'
+                                        }`}
                                 >
                                     สถานะ: {status}
                                 </p>
@@ -228,9 +246,8 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                         </div>
                         <button
                             onClick={handleCapture}
-                            className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded block mx-auto ${
-                                status === 'ใช้ได้' ? '' : 'opacity-50 cursor-not-allowed'
-                            }`}
+                            className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded block mx-auto ${status === 'ใช้ได้' ? '' : 'opacity-50 cursor-not-allowed'
+                                }`}
                             disabled={status !== 'ใช้ได้'}
                         >
                             ถ่ายรูป
@@ -263,9 +280,8 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                             </button>
                             <button
                                 onClick={handleSubmit}
-                                className={`btn bg-[#FF9C00] text-white px-4 py-2 rounded ${
-                                    status === 'ใช้ได้' ? '' : 'opacity-50 cursor-not-allowed'
-                                }`}
+                                className={`btn bg-[#FF9C00] text-white px-4 py-2 rounded ${status === 'ใช้ได้' ? '' : 'opacity-50 cursor-not-allowed'
+                                    }`}
                                 disabled={status !== 'ใช้ได้'}
                             >
                                 บันทึก

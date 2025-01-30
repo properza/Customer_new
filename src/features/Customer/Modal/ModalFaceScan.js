@@ -331,19 +331,6 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess ,inSuccess }) {
                             style={{ width: '100%', height: 'auto' }}
                         />
                         <p className="mt-4 text-center">ระบบกำลังตรวจจับใบหน้า...</p>
-                        {/* คุณสามารถเปิดใช้งานภาพที่ถ่ายและภาพอ้างอิงเพื่อดูได้ */}
-                        {/* {capturedImage && (
-                            <div className="mt-4">
-                                <h3 className="text-md font-semibold">ภาพที่ถ่าย:</h3>
-                                <img src={capturedImage} alt="Captured" className="w-full h-auto rounded-md" />
-                            </div>
-                        )} */}
-                        {/* {referenceImage && (
-                            <div className="mt-4">
-                                <h3 className="text-md font-semibold">ภาพอ้างอิง:</h3>
-                                <img src={referenceImage} alt="Reference" className="w-full h-auto rounded-md" />
-                            </div>
-                        )} */}
                     </>
                 ))}
                 <button

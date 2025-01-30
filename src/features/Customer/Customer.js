@@ -502,7 +502,7 @@ export default function Customer() {
                     onClose={() => setIsFaceScanModalOpen(false)}
                     faceUrl={customerinfo?.faceUrl}
                     onSuccess={handleFaceScanSuccess}
-                    inSuccess={handleFaceResetUpload}
+                    // inSuccess={handleFaceResetUpload}
                 />
             </div>
 

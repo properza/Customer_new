@@ -147,7 +147,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
         const file = dataURLtoFile(imageSrc, 'face.jpg');
 
         const formData = new FormData();
-        formData.append('face_image_url', file); // key "face_image_url"
+        formData.append('images', file); // key "face_image_url"
         formData.append('customer_id', customerId); // key "customer_id"
 
         onSubmit(formData);

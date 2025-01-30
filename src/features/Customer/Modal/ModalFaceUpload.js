@@ -141,19 +141,20 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             alert('กรุณาถ่ายรูปก่อน');
             return;
         }
-
+    
         if (status !== 'ใช้ได้') {
             alert('ภาพไม่ชัดเจน กรุณาถ่ายใหม่');
             return;
         }
-
-        const file = dataURLtoFile(imageSrc, 'face.jpg');
-
+    
+        const file = dataURLtoFile(imageSrc, 'face.jpg'); // แปลง DataURL เป็นไฟล์
+    
         const formData = new FormData();
         formData.append('face_image_url', file); // key "face_image_url"
         formData.append('customer_id', customerId); // key "customer_id"
-
-        onSubmit(formData);
+    
+        // เรียกใช้ action ของ Redux เพื่อส่ง FormData ไปยัง Backend
+        dispatch(upFaceurl({ fileData: formData }));
     };
 
     // ฟังก์ชันสำหรับจับเวลาและถ่ายรูปอัตโนมัติ

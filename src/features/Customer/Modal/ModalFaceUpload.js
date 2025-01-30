@@ -4,13 +4,9 @@ import * as faceapi from 'face-api.js';
 
 const videoConstraints = {
     facingMode: 'user', // กล้องหน้า (mobile)
-    // ถ้าอยากล็อกความละเอียดด้วย
-    // width: 640,
-    // height: 480,
 };
 
 function dataURLtoFile(dataURL, fileName) {
-    // แปลง base64 / DataURL เป็น file
     const arr = dataURL.split(',');
     const mime = arr[0].match(/:(.*?);/)[1];
     const bstr = atob(arr[1]);
@@ -30,6 +26,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
     const [status, setStatus] = useState(null); // สถานะการตรวจสอบภาพ
     const [isProcessing, setIsProcessing] = useState(false); // สถานะการประมวลผล
     const [countdown, setCountdown] = useState(null); // นับถอยหลังสำหรับการถ่ายรูปอัตโนมัติ
+    const [capturedImage, setCapturedImage] = useState(null); // เพิ่มตัวแปร capturedImage ที่นี่
 
     useEffect(() => {
         if (profile) {
@@ -73,7 +70,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
 
             if (detections.length === 1) {
                 const isClear = await isImageClear(video);
-                setStatus(isClear ? 'ใช้ได้' : 'ใบหน้าหรือภาพเบลอ');
+                setStatus(isClear ? 'ใช้ได้' : 'ไม่ใช้ได้');
             } else {
                 setStatus('ไม่พบใบหน้าหรือพบมากกว่า 1 ใบหน้า');
             }
@@ -120,7 +117,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             const screenshot = webcamRef.current.getScreenshot();
             const img = new Image();
             img.src = screenshot;
-            img.onload = async () => {
+            img.onload = () => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 canvas.width = img.width;
@@ -129,27 +126,8 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                 ctx.drawImage(img, -img.width, 0);
                 const correctedScreenshot = canvas.toDataURL('image/jpeg');
                 setImageSrc(correctedScreenshot);
-
-                // ตรวจสอบใบหน้าในภาพ
-                const probeImgElement = await faceapi.fetchImage(correctedScreenshot);
-                const detectionOptions = new faceapi.TinyFaceDetectorOptions({
-                    inputSize: 512,
-                    scoreThreshold: 0.5,
-                });
-
-                const probeDetection = await faceapi
-                    .detectSingleFace(probeImgElement, detectionOptions)
-                    .withFaceLandmarks()
-                    .withFaceDescriptor();
-
-                if (!probeDetection) {
-                    setStatus('ไม่พบใบหน้าในภาพที่ถ่าย'); // เปลี่ยนสถานะเมื่อไม่พบใบหน้า
-                    setCapturedImage(null); // รีเซ็ตภาพที่ถ่าย
-                    return;
-                }
-
-                // หากพบใบหน้าในภาพ
-                setStatus('ใช้ได้'); // สถานะเมื่อใบหน้าถูกตรวจพบ
+                setCapturedImage(correctedScreenshot); // ตั้งค่า capturedImage
+                setCountdown(null); // รีเซ็ตนับถอยหลังหลังถ่ายรูป
             };
         }
     };
@@ -196,6 +174,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
     }, [status]);
 
     if (!isOpen) return null;
+
 
     return (
         <div

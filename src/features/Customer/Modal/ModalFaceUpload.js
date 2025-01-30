@@ -106,7 +106,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             }
             variance /= len / 4;
 
-            const BLUR_THRESHOLD = 100; // ปรับค่าตามความต้องการ
+            const BLUR_THRESHOLD = 100;
             resolve(variance > BLUR_THRESHOLD);
         });
     };

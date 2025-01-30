@@ -497,13 +497,14 @@ export default function Customer() {
                 />
 
                 {/* Face Scan Modal */}
-                <ModalFaceScan
-                    isOpen={isFaceScanModalOpen}
-                    onClose={() => setIsFaceScanModalOpen(false)}
-                    faceUrl={customerinfo?.faceUrl}
-                    onSuccess={handleFaceScanSuccess}
-                    // inSuccess={handleFaceResetUpload}
-                />
+                {!isFaceUploadModalOpen && 
+                    <ModalFaceScan
+                        isOpen={isFaceScanModalOpen}
+                        onClose={() => setIsFaceScanModalOpen(false)}
+                        faceUrl={customerinfo?.faceUrl}
+                        onSuccess={handleFaceScanSuccess}
+                    />
+                }
             </div>
 
             {/* Registration Modal */}

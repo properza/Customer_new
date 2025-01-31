@@ -1,14 +1,16 @@
-import React ,{ useState } from 'react';
-import './modal.css'
+import React, { useState } from 'react';
+import './modal.css';
 import { format } from 'date-fns';
 import { th } from 'date-fns/locale';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet'; // import Leaflet
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 const ModalDetail = ({ isOpen, onClose, activity }) => {
     const [isImagesOpen, setIsImagesOpen] = useState(false);
+    const [isMapOpen, setIsMapOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
+
     if (!isOpen || !activity) return null;
 
     const { latitude, longitude, activityName, registrationImages, startDate, Nameplace } = activity;
@@ -30,58 +32,74 @@ const ModalDetail = ({ isOpen, onClose, activity }) => {
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <h2 className='font-bold text-xl'>รายละเอียดกิจกรรม</h2>
                 <div className="grid grid-cols-2 my-2">
-                    <label htmlFor="">
+                    <label>
                         <p className='font-bold text-[1rem]'>กิจกรรม</p>
                         <p>{activity.activityName}</p>
                     </label>
 
-                    <label htmlFor="">
+                    <label>
                         <p className='font-bold text-[1rem]'>วันที่เริ่มทำกิจกรรม</p>
                         <p>{activity.startDate ? format(new Date(activity.startDate), "d MMM yyyy", { locale: th }) : '-'}</p>
                     </label>
 
-                    <label htmlFor="">
+                    <label>
                         <p className='font-bold text-[1rem]'>สถานที่ทำกิจกรรม</p>
                         <p>{activity.Nameplace}</p>
                     </label>
 
-                    <label htmlFor="">
+                    <label>
                         <p className='font-bold text-[1rem]'>สถานะการเข้าร่วม</p>
                         <p>{activity.status}</p>
                     </label>
-
                 </div>
 
-                {registrationImages && registrationImages.length > 0 && (
-                    <div className="my-4">
+                {/* ปุ่ม Toggle ควบคุมแสดงแผนที่ & รูปภาพ */}
+                <div className="flex gap-4 my-4">
+                    {registrationImages && registrationImages.length > 0 && (
                         <button 
-                            className="bg-blue-500 text-white px-4 py-2 rounded-md"
-                            onClick={() => setIsImagesOpen(!isImagesOpen)}
+                            className={`px-4 py-2 rounded-md text-white ${isImagesOpen ? "bg-red-500" : "bg-blue-500"}`}
+                            onClick={() => {
+                                setIsImagesOpen(!isImagesOpen);
+                                setIsMapOpen(false); // ปิดแผนที่เมื่อแสดงรูป
+                            }}
                         >
                             {isImagesOpen ? "ซ่อนรูปภาพ" : "ดูรูปภาพที่ลงทะเบียน"}
                         </button>
+                    )}
 
-                        {/* แสดงรูปถ้า isImagesOpen เป็น true */}
-                        {isImagesOpen && (
-                            <div className="grid grid-cols-3 gap-2 mt-3">
-                                {registrationImages.map((img, index) => (
-                                    <img
-                                        key={index}
-                                        src={img}
-                                        alt={`registration-img-${index}`}
-                                        className="w-24 h-24 object-cover rounded-md cursor-pointer"
-                                        onClick={() => setSelectedImage(img)}
-                                    />
-                                ))}
-                            </div>
-                        )}
+                    {latitude && longitude && (
+                        <button 
+                            className={`px-4 py-2 rounded-md text-white ${isMapOpen ? "bg-red-500" : "bg-green-500"}`}
+                            onClick={() => {
+                                setIsMapOpen(!isMapOpen);
+                                setIsImagesOpen(false); // ปิดรูปเมื่อแสดงแผนที่
+                            }}
+                        >
+                            {isMapOpen ? "ซ่อนแผนที่" : "แสดงแผนที่"}
+                        </button>
+                    )}
+                </div>
+
+                {/* แสดงรูปถ้า isImagesOpen เป็น true */}
+                {isImagesOpen && (
+                    <div className="grid grid-cols-3 gap-2 mt-3">
+                        {registrationImages.map((img, index) => (
+                            <img
+                                key={index}
+                                src={img}
+                                alt={`registration-img-${index}`}
+                                className="w-24 h-24 object-cover rounded-md cursor-pointer"
+                                onClick={() => setSelectedImage(img)}
+                            />
+                        ))}
                     </div>
                 )}
 
-                {latitude && longitude ? (
+                {/* แสดงแผนที่ถ้า isMapOpen เป็น true */}
+                {isMapOpen && (
                     <div className="my-4">
                         <MapContainer
-                            center={[lat, lng]} // Use numbers for latitude and longitude
+                            center={[lat, lng]}
                             zoom={13}
                             style={{ height: '300px', width: '100%' }}
                         >
@@ -94,16 +112,14 @@ const ModalDetail = ({ isOpen, onClose, activity }) => {
                             </Marker>
                         </MapContainer>
                     </div>
-                ) : (
-                    <div className="my-4">
-                        <p>ไม่มีข้อมูลพิกัดแผนที่</p>
-                    </div>
                 )}
 
                 <div className="flex justify-end">
                     <button onClick={onClose} className='btn border-gray-400'>ปิด</button>
                 </div>
             </div>
+
+            {/* Modal สำหรับขยายรูปภาพ */}
             {selectedImage && (
                 <div className="modal-overlay fixed top-0 left-0 w-full h-full bg-black bg-opacity-70 flex items-center justify-center" onClick={() => setSelectedImage(null)}>
                     <div className="relative bg-white p-2 rounded-lg shadow-lg max-w-3xl">

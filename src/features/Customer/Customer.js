@@ -157,6 +157,7 @@ export default function Customer() {
                     timerProgressBar: true
                 });
                 setIsFaceUploadModalOpen(false);
+                window.location.reload();
 
                 // หลังจากอัปโหลดสำเร็จ ถ้ามี referralCode ให้เปิด face scan
                 if (referral) {
@@ -218,6 +219,7 @@ export default function Customer() {
     const handleFaceScanSuccess = () => {
         setIsFaceScanModalOpen(false);
         setIsReferralModalOpen(true);
+        
     };
 
     const handleFaceResetUpload =() =>{

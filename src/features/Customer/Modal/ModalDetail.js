@@ -57,7 +57,7 @@ const ModalDetail = ({ isOpen, onClose, activity }) => {
                 <div className="flex gap-4 my-4">
                     {registrationImages && registrationImages.length > 0 && (
                         <button 
-                            className={`px-4 py-2 rounded-md text-white ${isImagesOpen ? "bg-red-500" : "bg-blue-500"}`}
+                            className={`px-4 py-2 rounded-md text-white bg-[#FF9D03] ${isImagesOpen ? "bg-orange-200" : ""}`}
                             onClick={() => {
                                 setIsImagesOpen(!isImagesOpen);
                                 setIsMapOpen(false); // ปิดแผนที่เมื่อแสดงรูป
@@ -69,7 +69,7 @@ const ModalDetail = ({ isOpen, onClose, activity }) => {
 
                     {latitude && longitude && (
                         <button 
-                            className={`px-4 py-2 rounded-md text-white ${isMapOpen ? "bg-red-500" : "bg-green-500"}`}
+                            className={`px-4 py-2 rounded-md text-white bg-[#FF9D03] ${isMapOpen ? "bg-orange-200" : ""}`}
                             onClick={() => {
                                 setIsMapOpen(!isMapOpen);
                                 setIsImagesOpen(false); // ปิดรูปเมื่อแสดงแผนที่
@@ -123,7 +123,7 @@ const ModalDetail = ({ isOpen, onClose, activity }) => {
             {selectedImage && (
                 <div className="modal-overlay fixed top-0 left-0 w-full h-full bg-black bg-opacity-70 flex items-center justify-center" onClick={() => setSelectedImage(null)}>
                     <div className="relative bg-white p-2 rounded-lg shadow-lg max-w-3xl">
-                        <button className="absolute top-2 right-2 text-white bg-red-500 px-3 py-1 rounded-md" onClick={() => setSelectedImage(null)}>
+                        <button className="absolute top-1 right-1 text-white bg-red-500 px-3 py-1 rounded-md" onClick={() => setSelectedImage(null)}>
                             X
                         </button>
                         <img src={selectedImage} alt="Expanded View" className="max-w-full max-h-[80vh] object-contain" />

@@ -54,7 +54,7 @@ const ModalDetail = ({ isOpen, onClose, activity }) => {
                 </div>
 
                 {/* ปุ่ม Toggle ควบคุมแสดงแผนที่ & รูปภาพ */}
-                <div className="flex gap-4 my-4">
+                <div className="grid grid-cols-2 gap-4 my-4">
                     {registrationImages && registrationImages.length > 0 && (
                         <button 
                             className={`px-4 py-2 rounded-md text-white bg-[#FF9D03] ${isImagesOpen ? "bg-orange-200" : ""}`}

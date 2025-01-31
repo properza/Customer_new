@@ -194,7 +194,7 @@ export const signin = createAsyncThunk(
         ,
         {
           headers: {
-            'Content-Type': 'application/json'
+            // 'Content-Type': 'application/json'
           },
         }
       );

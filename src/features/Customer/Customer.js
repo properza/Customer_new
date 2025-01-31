@@ -17,6 +17,18 @@ import { th } from 'date-fns/locale';
 import { useLocation } from 'react-router-dom';
 import { loadModels } from './Modal/utils/faceApi';
 
+function dataURLtoFile(dataURL, fileName) {
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], fileName, { type: mime });
+}
+
 export default function Customer() {
     const dispatch = useDispatch();
     const location = useLocation();
@@ -88,6 +100,7 @@ export default function Customer() {
             setIsModalOpen(false);
         }
     }, [customerinfo]);
+    console.log("🔍 ตรวจสอบ selectedImages:", selectedImages);
 
     const handleAcceptReferral = async () => {
         if (!selectedImages || selectedImages.length === 0) {
@@ -102,18 +115,10 @@ export default function Customer() {
 
         setIsUploading(true);
 
-        const formData = new FormData();
-        formData.append("customerId", profile.userId);
-
-        let hasValidFile = false; // ตรวจสอบว่ามีไฟล์ที่ถูกต้องหรือไม่
-        selectedImages.forEach((img, index) => {
-            if (img.file) {
-                formData.append("images", img.file);
-                hasValidFile = true;
-            } else {
-                console.warn(`รูปภาพที่ ${index + 1} ไม่มีไฟล์`, img);
-            }
-        });
+        const formData = {
+            customerId: profile.userId,
+            images: selectedImages.map(img => img.file)
+        };
     
         try {
             const res = await dispatch(signin({ eventid: referral, formData })).unwrap();
@@ -211,7 +216,7 @@ export default function Customer() {
             file,
             preview: URL.createObjectURL(file),
         }));
-        setSelectedImages((prev) => [...prev, ...newImages]);
+        setSelectedImages(newImages);
     };
 
     const handleRemoveImage = (index) => {

@@ -194,7 +194,7 @@ export default function Customer() {
 
         try {
             const res = await dispatch(signin({ eventid: referral, formData })).unwrap();
-
+            
             Swal.fire({
                 icon: 'success',
                 title: 'ลงทะเบียนสำเร็จ',
@@ -225,6 +225,7 @@ export default function Customer() {
             });
         } finally {
             setIsUploading(false);
+            setReferral(null);
         }
     };
 

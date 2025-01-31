@@ -102,10 +102,18 @@ export default function Customer() {
 
         setIsUploading(true);
 
-        const formData = {
-            customerId: profile.userId,
-            images: selectedImages.map(img => img.file)
-        };
+        const formData = new FormData();
+        formData.append("customerId", profile.userId);
+
+        let hasValidFile = false; // ตรวจสอบว่ามีไฟล์ที่ถูกต้องหรือไม่
+        selectedImages.forEach((img, index) => {
+            if (img.file) {
+                formData.append("images", img.file);
+                hasValidFile = true;
+            } else {
+                console.warn(`รูปภาพที่ ${index + 1} ไม่มีไฟล์`, img);
+            }
+        });
     
         try {
             const res = await dispatch(signin({ eventid: referral, formData })).unwrap();

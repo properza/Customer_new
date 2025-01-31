@@ -99,22 +99,13 @@ export default function Customer() {
             });
             return;
         }
-    
-        // ปิด modal ระหว่างอัปโหลด
-        // setIsReferralModalOpen(false);
-    
-        // ตั้งสถานะปุ่มเป็น "กำลังลงทะเบียน..."
+
         setIsUploading(true);
-    
-        const formData = new FormData();
-        formData.append("customerId", profile.userId);
-    
-        // ตรวจสอบและเพิ่มไฟล์รูป
-        selectedImages.forEach((img) => {
-            if (img.file) {
-                formData.append("images", img.file);
-            }
-        });
+
+        const formData = {
+            customerId: String(profile.userId),
+            images: selectedImages.map(img => img.file)
+        };
     
         try {
             const res = await dispatch(signin({ eventid: referral, formData })).unwrap();
@@ -131,7 +122,7 @@ export default function Customer() {
     
             setIsFaceUploadModalOpen(false);
             dispatch(loginWithLine());
-            setReferral(null); // รีเซ็ต referralCode
+            setReferral(null);
         } catch (error) {
             console.error("Error uploading face image: ", error);
             Swal.fire({
@@ -145,9 +136,8 @@ export default function Customer() {
                 timerProgressBar: true
             });
             setIsFaceUploadModalOpen(false);
-            setReferral(null); // รีเซ็ต referralCode
         } finally {
-            setIsUploading(false); // รีเซ็ตปุ่ม
+            setIsUploading(false);
         }
     };
 

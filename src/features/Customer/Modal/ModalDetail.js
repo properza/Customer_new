@@ -54,10 +54,10 @@ const ModalDetail = ({ isOpen, onClose, activity }) => {
                 </div>
 
                 {/* ปุ่ม Toggle ควบคุมแสดงแผนที่ & รูปภาพ */}
-                <div className="grid grid-cols-2 gap-4 my-4 w-full">
+                <div className="grid grid-cols-2 gap-4 my-4">
                     {registrationImages && registrationImages.length > 0 && (
                         <button 
-                            className={`px-4 py-2 w-full rounded-md text-white bg-[#FF9D03] ${isImagesOpen ? "bg-orange-200" : ""}`}
+                            className={`px-4 py-2 rounded-md text-white bg-[#FF9D03] ${isImagesOpen ? "bg-orange-200" : ""}`}
                             onClick={() => {
                                 setIsImagesOpen(!isImagesOpen);
                                 setIsMapOpen(false); // ปิดแผนที่เมื่อแสดงรูป
@@ -69,7 +69,7 @@ const ModalDetail = ({ isOpen, onClose, activity }) => {
 
                     {latitude && longitude && (
                         <button 
-                            className={`px-4 py-2 w-full rounded-md text-white bg-[#FF9D03] ${isMapOpen ? "bg-orange-200" : ""}`}
+                            className={`px-4 py-2 rounded-md text-white bg-[#FF9D03] ${isMapOpen ? "bg-orange-200" : ""}`}
                             onClick={() => {
                                 setIsMapOpen(!isMapOpen);
                                 setIsImagesOpen(false); // ปิดรูปเมื่อแสดงแผนที่

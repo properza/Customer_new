@@ -44,7 +44,8 @@ export default function Customer() {
     const [referral, setReferral] = useState(null);
     const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
     const [isFaceScanModalOpen, setIsFaceScanModalOpen] = useState(false);
-    const [isUploading , setIsUploading ]= useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [selectedImages, setSelectedImages] = useState([]);
 
     // Select necessary state from Redux store
     const { profile, customerinfo, isLoading, error } = useSelector((state) => state.user);
@@ -100,7 +101,31 @@ export default function Customer() {
             setIsModalOpen(false);
         }
     }, [customerinfo]);
-    console.log("🔍 ตรวจสอบ selectedImages:", selectedImages);
+
+
+
+    const handleFileChange = (event) => {
+        const files = Array.from(event.target.files);
+        const newImages = files.map((file) => ({
+            file,
+            preview: URL.createObjectURL(file),
+        }));
+        setSelectedImages((prev) => [...prev, ...newImages]);
+    };
+
+    const handleRemoveImage = (index) => {
+        setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const handlePreviewImage = (imageUrl) => {
+        Swal.fire({
+            imageUrl,
+            imageWidth: 400,
+            imageAlt: "Preview Image",
+            showConfirmButton: false,
+            showCloseButton: true,
+        });
+    };
 
     const handleAcceptReferral = async () => {
         if (!selectedImages || selectedImages.length === 0) {
@@ -115,14 +140,22 @@ export default function Customer() {
 
         setIsUploading(true);
 
-        const formData = {
-            customerId: profile.userId,
-            images: selectedImages.map(img => img.file)
-        };
-    
+        const formData = new FormData();
+        formData.append("customerId", profile.userId);
+
+        let hasValidFile = false; // ตรวจสอบว่ามีไฟล์ที่ถูกต้องหรือไม่
+        selectedImages.forEach((img, index) => {
+            if (img.file instanceof File) {
+                formData.append("images", img.file);
+                hasValidFile = true;
+            } else {
+                console.warn(`⚠️ รูปที่ ${index + 1} ไม่มีไฟล์ที่ถูกต้อง`, img);
+            }
+        });
+
         try {
             const res = await dispatch(signin({ eventid: referral, formData })).unwrap();
-    
+
             Swal.fire({
                 icon: 'success',
                 title: 'ลงทะเบียนสำเร็จ',
@@ -131,24 +164,26 @@ export default function Customer() {
                 toast: true,
                 position: 'top-end',
                 timerProgressBar: true
+            }).then(() => {
+                setIsFaceUploadModalOpen(false);
+                dispatch(loginWithLine());
+                setReferral(null);
             });
-    
-            setIsFaceUploadModalOpen(false);
-            dispatch(loginWithLine());
-            setReferral(null);
         } catch (error) {
             console.error("Error uploading face image: ", error);
             Swal.fire({
                 icon: 'error',
                 title: 'ลงทะเบียนไม่สำเร็จ',
-                text: 'กรุณากรอกข้อมูลให้ครบ',
-                timer: 1500,
+                text:  error.message,
+                timer: 5000,
                 showConfirmButton: false,
                 toast: true,
                 position: 'top-end',
                 timerProgressBar: true
+            }).then(() => {
+                setIsFaceUploadModalOpen(false);
+                setIsReferralModalOpen(false);
             });
-            setIsFaceUploadModalOpen(false);
         } finally {
             setIsUploading(false);
         }
@@ -208,30 +243,6 @@ export default function Customer() {
     };
 
     //เข้าร่วมกิจกรรม
-    const [selectedImages, setSelectedImages] = useState([]);
-
-    const handleFileChange = (event) => {
-        const files = Array.from(event.target.files);
-        const newImages = files.map((file) => ({
-            file,
-            preview: URL.createObjectURL(file),
-        }));
-        setSelectedImages(newImages);
-    };
-
-    const handleRemoveImage = (index) => {
-        setSelectedImages((prev) => prev.filter((_, i) => i !== index));
-    };
-
-    const handlePreviewImage = (imageUrl) => {
-        Swal.fire({
-            imageUrl,
-            imageWidth: 400,
-            imageAlt: "Preview Image",
-            showConfirmButton: false,
-            showCloseButton: true,
-        });
-    };
 
     const handleModalSubmit = (formData) => {
         dispatch(updateinfo(formData))
@@ -519,8 +530,8 @@ export default function Customer() {
                         {/* Input Upload รูป */}
                         <input
                             type="file"
-                            accept="image/*"
                             multiple
+                            accept="image/*"
                             onChange={handleFileChange}
                             className="mt-4 block w-full text-sm text-gray-700 file:mr-2 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-500 file:text-white hover:file:bg-blue-600"
                         />

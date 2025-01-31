@@ -441,7 +441,7 @@ export default function Customer() {
 
             <div className="w-[70%] mx-auto max-lg:w-[90%]">
                 {activebtn === 'history' &&
-                    <TitleCard title={'ประวัติกิจกรรม'} title2={`ทั้งหมด ${historyData.data?.total || 0} รายการ`} topMargin={'mt-1'}>
+                    <TitleCard title={'ประวัติกิจกรรม'} title2={`ทั้งหมด ${historyData.meta?.total || 0} รายการ`} topMargin={'mt-1'}>
                         <div className="overflow-auto h-[45vh]">
                             <table className='table w-full border-collapse border border-gray-200'>
                                 <thead className='bg-[#F7D4E8]'>
@@ -563,7 +563,7 @@ export default function Customer() {
                 }
 
                 {activebtn === 'historytrading' &&
-                    <TitleCard title={'ประวัติการแลก'} title2={`ทั้งหมด ${0} รายการ`} topMargin={'mt-1'}>
+                    <TitleCard title={'ประวัติการแลก'} title2={`ทั้งหมด ${historyreward.meta?.total} รายการ`} topMargin={'mt-1'}>
                         <div className="overflow-auto h-[45vh]">
                             {historyreward.data && historyreward.data.length > 0 ? (<div className='grid grid-cols-2 gap-5'>
                                 {historyreward.data.map((reward, index) => (

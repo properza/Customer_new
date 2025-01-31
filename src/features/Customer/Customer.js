@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import ReactPaginate from 'react-paginate';
 import Top from './Top';
 import TitleCard from '../../components/Cards/TitleCard';
-import { loginWithLine, resetState, updateinfo, gethistory, upFaceurl, signin , getrewarddata } from '../common/userSlice'; 
+import { loginWithLine, resetState, updateinfo, gethistory, upFaceurl, signin, getrewarddata } from '../common/userSlice';
 import classNames from 'classnames';
 import Modal from './Modal/Modal';
 import ModalUpdateInfo from './Modal/ModalUpdateInfo';
@@ -32,6 +32,7 @@ export default function Customer() {
     const [referral, setReferral] = useState(null);
     const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
     const [isFaceScanModalOpen, setIsFaceScanModalOpen] = useState(false);
+    const [isUploading , setIsUploading ]= useState(false);
 
     // Select necessary state from Redux store
     const { profile, customerinfo, isLoading, error } = useSelector((state) => state.user);
@@ -88,46 +89,66 @@ export default function Customer() {
         }
     }, [customerinfo]);
 
-    const handleAcceptReferral = (datarefer) => {
-        const formdata = {
-            customerId: profile.userId,
-            images: [
-                "1",
-                "2"
-            ]
-        }; // datarefer
-        dispatch(signin({ eventid: referral, formdata }))
-            .unwrap()
-            .then((res) => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'ลงทะเบียนสำเร็จ',
-                    timer: 1500,
-                    showConfirmButton: false,
-                    toast: true,
-                    position: 'top-end',
-                    timerProgressBar: true
-                });
-                setIsFaceUploadModalOpen(false);
-                dispatch(loginWithLine());
-                setReferral(null); // รีเซ็ต referralCode
-            })
-            .catch((error) => {
-                console.error("Error uploading face image: ", error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'ลงทะเบียนไม่สำเร็จ',
-                    text: 'กรุณากรอกข้อมูลให้ครบ',
-                    timer: 1500,
-                    showConfirmButton: false,
-                    toast: true,
-                    position: 'top-end',
-                    timerProgressBar: true
-                });
-                setIsFaceUploadModalOpen(false);
-                setReferral(null); // รีเซ็ต referralCode
+    const handleAcceptReferral = async () => {
+        if (!selectedImages || selectedImages.length === 0) {
+            Swal.fire({
+                icon: "warning",
+                title: "กรุณาเลือกไฟล์ก่อน",
+                timer: 1500,
+                showConfirmButton: false,
             });
-        setIsReferralModalOpen(false);
+            return;
+        }
+    
+        // ปิด modal ระหว่างอัปโหลด
+        // setIsReferralModalOpen(false);
+    
+        // ตั้งสถานะปุ่มเป็น "กำลังลงทะเบียน..."
+        setIsUploading(true);
+    
+        const formData = new FormData();
+        formData.append("customerId", profile.userId);
+    
+        // ตรวจสอบและเพิ่มไฟล์รูป
+        selectedImages.forEach((img) => {
+            if (img.file) {
+                formData.append("images", img.file);
+            }
+        });
+    
+        try {
+            const res = await dispatch(signin({ eventid: referral, formData })).unwrap();
+    
+            Swal.fire({
+                icon: 'success',
+                title: 'ลงทะเบียนสำเร็จ',
+                timer: 1500,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end',
+                timerProgressBar: true
+            });
+    
+            setIsFaceUploadModalOpen(false);
+            dispatch(loginWithLine());
+            setReferral(null); // รีเซ็ต referralCode
+        } catch (error) {
+            console.error("Error uploading face image: ", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'ลงทะเบียนไม่สำเร็จ',
+                text: 'กรุณากรอกข้อมูลให้ครบ',
+                timer: 1500,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end',
+                timerProgressBar: true
+            });
+            setIsFaceUploadModalOpen(false);
+            setReferral(null); // รีเซ็ต referralCode
+        } finally {
+            setIsUploading(false); // รีเซ็ตปุ่ม
+        }
     };
 
     const handleDeclineReferral = () => {
@@ -183,6 +204,32 @@ export default function Customer() {
         setCurrentPage(selected + 1);
     };
 
+    //เข้าร่วมกิจกรรม
+    const [selectedImages, setSelectedImages] = useState([]);
+
+    const handleFileChange = (event) => {
+        const files = Array.from(event.target.files);
+        const newImages = files.map((file) => ({
+            file,
+            preview: URL.createObjectURL(file),
+        }));
+        setSelectedImages((prev) => [...prev, ...newImages]);
+    };
+
+    const handleRemoveImage = (index) => {
+        setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const handlePreviewImage = (imageUrl) => {
+        Swal.fire({
+            imageUrl,
+            imageWidth: 400,
+            imageAlt: "Preview Image",
+            showConfirmButton: false,
+            showCloseButton: true,
+        });
+    };
+
     const handleModalSubmit = (formData) => {
         dispatch(updateinfo(formData))
             .unwrap()
@@ -219,10 +266,10 @@ export default function Customer() {
     const handleFaceScanSuccess = () => {
         setIsFaceScanModalOpen(false);
         setIsReferralModalOpen(true);
-        
+
     };
 
-    const handleFaceResetUpload =() =>{
+    const handleFaceResetUpload = () => {
         setIsFaceUploadModalOpen(true);
     };
 
@@ -253,8 +300,8 @@ export default function Customer() {
 
     const fullname = customerinfo?.first_name && customerinfo?.last_name ? `${customerinfo?.first_name} ${customerinfo?.last_name}` : '-';
     const iconView = <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M14.3333 15.5L9.08333 10.25C8.66667 10.5833 8.1875 10.8472 7.64583 11.0417C7.10417 11.2361 6.52778 11.3333 5.91667 11.3333C4.40278 11.3333 3.12153 10.809 2.07292 9.76042C1.02431 8.71181 0.5 7.43056 0.5 5.91667C0.5 4.40278 1.02431 3.12153 2.07292 2.07292C3.12153 1.02431 4.40278 0.5 5.91667 0.5C7.43056 0.5 8.71181 1.02431 9.76042 2.07292C10.809 3.12153 11.3333 4.40278 11.3333 5.91667C11.3333 6.52778 11.2361 7.10417 11.0417 7.64583C10.8472 8.1875 10.5833 8.66667 10.25 9.08333L15.5 14.3333L14.3333 15.5ZM5.91667 9.66667C6.95833 9.66667 7.84375 9.30208 8.57292 8.57292C9.30208 7.84375 9.66667 6.95833 9.66667 5.91667C9.66667 4.875 9.30208 3.98958 8.57292 3.26042C7.84375 2.53125 6.95833 2.16667 5.91667 2.16667C4.875 2.16667 3.98958 2.53125 3.26042 3.26042C2.53125 3.98958 2.16667 4.875 2.16667 5.91667C2.16667 6.95833 2.53125 7.84375 3.26042 8.57292C3.98958 9.30208 4.875 9.66667 5.91667 9.66667Z" fill="#1D1B20" />
-                    </svg>;
+        <path d="M14.3333 15.5L9.08333 10.25C8.66667 10.5833 8.1875 10.8472 7.64583 11.0417C7.10417 11.2361 6.52778 11.3333 5.91667 11.3333C4.40278 11.3333 3.12153 10.809 2.07292 9.76042C1.02431 8.71181 0.5 7.43056 0.5 5.91667C0.5 4.40278 1.02431 3.12153 2.07292 2.07292C3.12153 1.02431 4.40278 0.5 5.91667 0.5C7.43056 0.5 8.71181 1.02431 9.76042 2.07292C10.809 3.12153 11.3333 4.40278 11.3333 5.91667C11.3333 6.52778 11.2361 7.10417 11.0417 7.64583C10.8472 8.1875 10.5833 8.66667 10.25 9.08333L15.5 14.3333L14.3333 15.5ZM5.91667 9.66667C6.95833 9.66667 7.84375 9.30208 8.57292 8.57292C9.30208 7.84375 9.66667 6.95833 9.66667 5.91667C9.66667 4.875 9.30208 3.98958 8.57292 3.26042C7.84375 2.53125 6.95833 2.16667 5.91667 2.16667C4.875 2.16667 3.98958 2.53125 3.26042 3.26042C2.53125 3.98958 2.16667 4.875 2.16667 5.91667C2.16667 6.95833 2.53125 7.84375 3.26042 8.57292C3.98958 9.30208 4.875 9.66667 5.91667 9.66667Z" fill="#1D1B20" />
+    </svg>;
 
     return (
         <>
@@ -403,7 +450,7 @@ export default function Customer() {
                                 {getreward.data.map((reward, index) => (
                                     <div key={reward.id} className='border shadow-lg rounded-md p-5 '>
                                         <div className="my-1">
-                                            <img src={reward.rewardUrl} alt="" className='w-35 h-35 mb-2 mx-auto'/>
+                                            <img src={reward.rewardUrl} alt="" className='w-35 h-35 mb-2 mx-auto' />
 
                                             <p>{reward.reward_name}</p>
                                             <p>มีจำนวน : {reward.amount} ชิ้น/อัน</p>
@@ -465,6 +512,37 @@ export default function Customer() {
                     <div className="p-4">
                         <h2 className="text-lg font-bold mb-4">คำเชิญเข้าร่วมกิจกรรม</h2>
                         <p>คุณได้รับคำเชิญให้เข้าร่วมกิจกรรมผ่าน referral: <strong>{referral}</strong></p>
+
+                        {/* Input Upload รูป */}
+                        <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleFileChange}
+                            className="mt-4 block w-full text-sm text-gray-700 file:mr-2 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-500 file:text-white hover:file:bg-blue-600"
+                        />
+
+                        {/* แสดงตัวอย่างรูปที่อัปโหลด */}
+                        {selectedImages.length > 0 && (
+                            <div className="mt-4 grid grid-cols-3 gap-2">
+                                {selectedImages.map((img, index) => (
+                                    <div key={index} className="relative">
+                                        <img
+                                            src={img.preview}
+                                            alt="Uploaded"
+                                            className="w-full h-24 object-cover rounded cursor-pointer"
+                                            onClick={() => handlePreviewImage(img.preview)}
+                                        />
+                                        <button
+                                            className="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-1 rounded-full"
+                                            onClick={() => handleRemoveImage(index)}
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                         <div className="flex justify-end gap-2 mt-4">
                             <button
                                 onClick={handleDeclineReferral}
@@ -475,8 +553,9 @@ export default function Customer() {
                             <button
                                 onClick={() => handleAcceptReferral(referral)}
                                 className="bg-green-500 text-white px-4 py-2 rounded-md"
+                                disabled={isUploading}
                             >
-                                ยอมรับ
+                                {isUploading ? "กำลังลงทะเบียน..." : "ยอมรับ"}
                             </button>
                         </div>
                     </div>
@@ -498,18 +577,18 @@ export default function Customer() {
                         onSubmit={handleFaceImageUpload}
                         profile={profile}
                     />
-                
 
-                {/* Face Scan Modal */}
-                {!isFaceUploadModalOpen && 
-                    <ModalFaceScan
-                        isOpen={isFaceScanModalOpen}
-                        onClose={() => setIsFaceScanModalOpen(false)}
-                        faceUrl={customerinfo?.faceUrl}
-                        onSuccess={handleFaceScanSuccess}
-                    />
-                }
-                
+
+                    {/* Face Scan Modal */}
+                    {!isFaceUploadModalOpen &&
+                        <ModalFaceScan
+                            isOpen={isFaceScanModalOpen}
+                            onClose={() => setIsFaceScanModalOpen(false)}
+                            faceUrl={customerinfo?.faceUrl}
+                            onSuccess={handleFaceScanSuccess}
+                        />
+                    }
+
                 </>}
             </div>
 

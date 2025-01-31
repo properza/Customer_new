@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import ReactPaginate from 'react-paginate';
 import Top from './Top';
 import TitleCard from '../../components/Cards/TitleCard';
-import { loginWithLine, resetState, updateinfo, gethistory, upFaceurl, signin, getrewarddata } from '../common/userSlice';
+import { loginWithLine, resetState, updateinfo, gethistory, upFaceurl, signin, getrewarddata, gethistoryreward, redeemReward } from '../common/userSlice';
 import classNames from 'classnames';
 import Modal from './Modal/Modal';
 import ModalUpdateInfo from './Modal/ModalUpdateInfo';
@@ -17,18 +17,6 @@ import { th } from 'date-fns/locale';
 import { useLocation } from 'react-router-dom';
 import { loadModels } from './Modal/utils/faceApi';
 
-function dataURLtoFile(dataURL, fileName) {
-    const arr = dataURL.split(',');
-    const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new File([u8arr], fileName, { type: mime });
-}
-
 export default function Customer() {
     const dispatch = useDispatch();
     const location = useLocation();
@@ -37,6 +25,7 @@ export default function Customer() {
     const [ModalRegister, setModalRegister] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const historyData = useSelector(state => state.user.gethistorysData);
+    const historyreward = useSelector(state => state.user.gethistoryrewards);
     const getreward = useSelector(state => state.user.getrewardslist);
     const [isModalDetailOpen, setIsModalDetailOpen] = useState(false);
     const [selectedActivity, setSelectedActivity] = useState(null);
@@ -71,6 +60,7 @@ export default function Customer() {
         if (profile) {
             dispatch(gethistory({ page: currentPage, userID: profile.userId }));
             dispatch(getrewarddata({ page: currentPage, userID: profile.userId }));
+            dispatch(gethistoryreward({ page: currentPage, userID: profile.userId }));
         }
     }, [dispatch, profile, currentPage]);
 
@@ -102,7 +92,56 @@ export default function Customer() {
         }
     }, [customerinfo]);
 
-
+    const handleRedeemClick = (reward) => {
+        // แสดงยืนยันการแลกรางวัลก่อน
+        Swal.fire({
+            title: 'คุณต้องการแลกของรางวัลนี้หรือไม่?',
+            text: `รางวัล: ${reward.reward_name} ต้องใช้แต้ม ${reward.points_required} แต้ม`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'ตกลง',
+            cancelButtonText: 'ยกเลิก',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // ถ้าผู้ใช้กด "ตกลง" จะทำการส่งข้อมูล
+                const formData = {
+                    customerId: profile.userId,  // profile.userId ต้องมีข้อมูล
+                    rewardId: reward.id,
+                };
+    
+                dispatch(redeemReward({ formData }))
+                    .unwrap()
+                    .then((response) => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'แลกรางวัลสำเร็จ',
+                            text: 'คุณได้แลกรางวัลสำเร็จแล้ว',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end',
+                            timerProgressBar: true,
+                        });
+                        dispatch(getrewarddata({ page: currentPage, userID: profile.userId }));
+                        dispatch(gethistoryreward({ page: currentPage, userID: profile.userId }));
+                    })
+                    .catch((error) => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาดในการแลกรางวัล',
+                            text: error.message || 'กรุณาลองใหม่',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end',
+                            timerProgressBar: true,
+                        });
+                    });
+            }
+        });
+    };
 
     const handleFileChange = (event) => {
         const files = Array.from(event.target.files);
@@ -174,7 +213,7 @@ export default function Customer() {
             Swal.fire({
                 icon: 'error',
                 title: 'ลงทะเบียนไม่สำเร็จ',
-                text:  error.message,
+                text: error.message,
                 timer: 5000,
                 showConfirmButton: false,
                 toast: true,
@@ -317,13 +356,19 @@ export default function Customer() {
         <path d="M14.3333 15.5L9.08333 10.25C8.66667 10.5833 8.1875 10.8472 7.64583 11.0417C7.10417 11.2361 6.52778 11.3333 5.91667 11.3333C4.40278 11.3333 3.12153 10.809 2.07292 9.76042C1.02431 8.71181 0.5 7.43056 0.5 5.91667C0.5 4.40278 1.02431 3.12153 2.07292 2.07292C3.12153 1.02431 4.40278 0.5 5.91667 0.5C7.43056 0.5 8.71181 1.02431 9.76042 2.07292C10.809 3.12153 11.3333 4.40278 11.3333 5.91667C11.3333 6.52778 11.2361 7.10417 11.0417 7.64583C10.8472 8.1875 10.5833 8.66667 10.25 9.08333L15.5 14.3333L14.3333 15.5ZM5.91667 9.66667C6.95833 9.66667 7.84375 9.30208 8.57292 8.57292C9.30208 7.84375 9.66667 6.95833 9.66667 5.91667C9.66667 4.875 9.30208 3.98958 8.57292 3.26042C7.84375 2.53125 6.95833 2.16667 5.91667 2.16667C4.875 2.16667 3.98958 2.53125 3.26042 3.26042C2.53125 3.98958 2.16667 4.875 2.16667 5.91667C2.16667 6.95833 2.53125 7.84375 3.26042 8.57292C3.98958 9.30208 4.875 9.66667 5.91667 9.66667Z" fill="#1D1B20" />
     </svg>;
 
+    const iconFix =
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+        </svg>;
+
     return (
         <>
             <Top />
-            <div className="flex justify-between p-2 rounded-lg w-[70%] mx-auto max-lg:w-[90%] bg-[#95C0E9]">
-                <div className="w-3/5">
+            <div className="flex justify-between p-2 rounded-lg w-[70%] mx-auto max-lg:w-[97%] bg-[#95C0E9]">
+                <div className="w-[68%]">
                     <p className='text-white font-bold text-lg'>ข้อมูลส่วนตัว</p>
-                    <div className="grid gap-1 bg-white p-2 rounded-lg">
+                    <div className="grid gap-1 bg-white p-2 rounded-lg relative">
                         <div className="flex max-lg:flex-col gap-2 items-center max-lg:items-start">
                             <p>ชื่อ-สกุล :</p>
                             <p id="UserName">{fullname}</p>
@@ -341,14 +386,18 @@ export default function Customer() {
                             <p id="sub_branch">{customerinfo?.branch_st || "-"}</p>
                         </div>
                         <div className="flex gap-2 items-center">
-                            <p>หลักสูตร :</p>
+                            <p>ระดับการศึกษา :</p>
                             <p id="levelST">{customerinfo?.tpye_st || "-"}</p>
                         </div>
                         <div className="flex gap-2 items-center">
                             <p>ชั้นปี :</p>
                             <p id="St-year">{customerinfo?.levelST || "-"}</p>
                         </div>
+                        <button className='w-6 h-6 absolute right-1 top-1' onClick={() => setModalRegister(true)}>
+                            {iconFix}
+                        </button>
                     </div>
+
                 </div>
 
                 <div className="grid items-center">
@@ -462,18 +511,24 @@ export default function Customer() {
                         <div className="overflow-auto h-[45vh]">
                             {getreward.data && getreward.data.length > 0 ? (<div className='grid grid-cols-2 gap-5'>
                                 {getreward.data.map((reward, index) => (
-                                    <div key={reward.id} className='border shadow-lg rounded-md p-5 '>
-                                        <div className="my-1">
-                                            <img src={reward.rewardUrl} alt="" className='w-35 h-35 mb-2 mx-auto' />
+                                    <div key={reward.id} className='flex flex-col justify-between border shadow-lg rounded-md p-2 '>
+                                        <img src={reward.rewardUrl} alt="" className='w-35 h-35 mb-2 mx-auto' />
 
-                                            <p>{reward.reward_name}</p>
-                                            <p>มีจำนวน : {reward.amount} ชิ้น/อัน</p>
-                                            <p>แต้มที่ต้องการ : {reward.points_required || '-'}</p>
+                                        <div className="">
+                                            <div className="my-1">
+                                                <p>{reward.reward_name}</p>
+                                                <p>มีจำนวน : {reward.amount} ชิ้น/อัน</p>
+                                                <p>แต้มที่ต้องการ : {reward.points_required || '-'}</p>
+                                            </div>
+
+                                            <button
+                                                className="bg-blue-500 text-white px-3 py-1 mt-2 rounded-md w-full hover:bg-blue-400"
+                                                onClick={() => handleRedeemClick(reward)} // เรียกฟังก์ชัน handleRedeemClick
+                                            >
+                                                แลก
+                                            </button>
                                         </div>
 
-                                        <button className="bg-blue-500 text-white px-3 py-1 mt-2 rounded-md w-full hover:bg-blue-400">
-                                            แลก
-                                        </button>
                                     </div>
                                 ))}
                             </div>) : (
@@ -510,7 +565,48 @@ export default function Customer() {
                 {activebtn === 'historytrading' &&
                     <TitleCard title={'ประวัติการแลก'} title2={`ทั้งหมด ${0} รายการ`} topMargin={'mt-1'}>
                         <div className="overflow-auto h-[45vh]">
-                            ticket เผื่อใช้
+                            {historyreward.data && historyreward.data.length > 0 ? (<div className='grid grid-cols-2 gap-5'>
+                                {historyreward.data.map((reward, index) => (
+                                    <div key={reward.id} className='flex justify-between border shadow-lg rounded-md p-2 '>
+                                        <div className="">
+                                            <div className="my-1">
+                                                <p>{reward.reward_name}</p>
+                                                <p>{reward.status}</p>
+                                            </div>
+                                            <button className="bg-blue-500 text-white px-3 py-1 mt-2 rounded-md w-full hover:bg-blue-400">
+                                                ใช้รางวัล
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                ))}
+                            </div>) : (
+                                <p className="text-center mt-4">ไม่มีข้อมูลรางวัล</p>
+                            )}
+                            {historyreward.meta?.total >= 10 &&
+                                <div className="flex justify-end mt-4">
+                                    <ReactPaginate
+                                        previousLabel={"<"}
+                                        nextLabel={">"}
+                                        breakLabel={"..."}
+                                        pageCount={historyreward.meta?.last_page || 1}
+                                        marginPagesDisplayed={2}
+                                        pageRangeDisplayed={3}
+                                        onPageChange={({ selected }) => dispatch(gethistoryreward({ page: selected + 1, userID: profile.userId }))}
+                                        containerClassName={"pagination"}
+                                        activeClassName={"active"}
+                                        breakClassName={"page-item"}
+                                        breakLinkClassName={"page-link"}
+                                        pageClassName={"page-item"}
+                                        pageLinkClassName={"page-link"}
+                                        previousClassName={"page-item"}
+                                        previousLinkClassName={"page-link"}
+                                        nextClassName={"page-item"}
+                                        nextLinkClassName={"page-link"}
+                                        disabledClassName={"disabled"}
+                                    />
+                                </div>
+                            }
                         </div>
                     </TitleCard>
                 }

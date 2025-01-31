@@ -26,6 +26,22 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
         levelST: '',
     });
 
+    useEffect(() => {
+        if (isOpen && customerinfo) {
+            setFormData({
+                customer_id: profile?.userId || '',
+                first_name: customerinfo.first_name || '',
+                last_name: customerinfo.last_name || '',
+                user_code: customerinfo.user_code || '',
+                group_st: customerinfo.group_st || '',
+                branch_st: customerinfo.branch_st || '',
+                tpye_st: customerinfo.tpye_st || '',
+                st_tpye: customerinfo.st_tpye || '',
+                levelST: customerinfo.levelST || ''
+            });
+        }
+    }, [isOpen, JSON.stringify(customerinfo)]);
+
     // กำหนดแมปปิ้งระหว่างคณะและสาขา
     const branchOptionsMap = {
         "วิศวกรรมศาสตร์": [
@@ -217,7 +233,7 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white w-1/2 max-lg:w-[80%] p-4 rounded-lg shadow-lg">
+            <div className="bg-white w-1/2 max-lg:w-[90%] p-4 rounded-lg shadow-lg">
                 <h2 className="text-lg text-center font-bold mb-4">ลงทะเบียน</h2>
 
                 {/* ชื่อ (ภาษาไทยเท่านั้น) */}

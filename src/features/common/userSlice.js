@@ -16,6 +16,8 @@ const getprofile = `${baseurl}customer/customerinfo`;
 const Updateinfo = `${baseurl}customer/customerinfo/updateprofile`
 const gethisTory = (page, userID) => `${baseurl}events/customer/registered-events/${userID}?page=${page}per_page=10`
 const getreward = (page) => `${baseurl}customer/rewards?page=${page}per_page=10`
+const redeemR = `${baseurl}customer/rewards/redeem`
+const historyrewardURL = ( page ,userID )=> `${baseurl}customer/historyrewards/${userID}?page=${page}&per_page=10`
 const uploadFaceUrl = `${baseurl}customer/customerinfo/uploadfaceid`
 const register = (eventid) => `${baseurl}events/registerCustomer/${eventid}`;
 
@@ -162,6 +164,23 @@ export const upFaceurl = createAsyncThunk(
   }
 );
 
+export const redeemReward = createAsyncThunk(
+  'user/redeemed',
+  async ({ formData }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(redeemR, formData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response ? error.response.data : error.message);
+    }
+  }
+);
+
 export const getuser = createAsyncThunk(
   'user/getuserData',
   async ({ profile }, { rejectWithValue }) => {
@@ -201,6 +220,27 @@ export const signin = createAsyncThunk(
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response ? error.response.data : error.message);
+    }
+  }
+);
+
+export const gethistoryreward = createAsyncThunk(
+  "users/gethistoryrewards",
+  async ({ page = 1, userID }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        historyrewardURL(page, userID),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching history:", error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || "Error occurred while fetching events");
     }
   }
 );
@@ -259,6 +299,7 @@ const userSlice = createSlice({
     error: null,
     response: null,
     gethistorysData: { data: [], meta: {} },
+    gethistoryrewards: { data: [], meta: {} },
     getrewardslist: { data: [], meta: {} },
   },
   reducers: {
@@ -319,6 +360,8 @@ const userSlice = createSlice({
         (state, action) => {
           if (action.type.includes("gethistorys")) {
             state.gethistorysData = action.payload;
+          } else if (action.type.includes("gethistoryrewards")) {
+            state.gethistoryrewards = action.payload;
           } else if (action.type.includes("getrewards")) {
             state.getrewardslist = action.payload;
           }

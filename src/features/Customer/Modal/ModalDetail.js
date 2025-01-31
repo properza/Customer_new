@@ -28,7 +28,7 @@ const ModalDetail = ({ isOpen, onClose, activity }) => {
     });
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-overlay" >
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <h2 className='font-bold text-xl'>รายละเอียดกิจกรรม</h2>
                 <div className="grid grid-cols-2 my-2">

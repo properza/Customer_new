@@ -491,12 +491,14 @@ export default function Customer() {
                 </Modal>
 
                 {/* Face Upload Modal */}
-                <ModalFaceUpload
-                    isOpen={isFaceUploadModalOpen}
-                    onClose={() => setIsFaceUploadModalOpen(false)}
-                    onSubmit={handleFaceImageUpload}
-                    profile={profile}
-                />
+                {!ModalRegister && 
+                    <ModalFaceUpload
+                        isOpen={isFaceUploadModalOpen}
+                        onClose={() => setIsFaceUploadModalOpen(false)}
+                        onSubmit={handleFaceImageUpload}
+                        profile={profile}
+                    />
+                }
 
                 {/* Face Scan Modal */}
                 {!isFaceUploadModalOpen && 

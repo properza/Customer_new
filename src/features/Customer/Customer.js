@@ -73,7 +73,7 @@ export default function Customer() {
             }
 
             // ลำดับการเปิดโมดัลตามที่ต้องการ
-            if (referral) {
+            if (referral && customerinfo) {
                 setIsFaceScanModalOpen(true);
             }
         } else {

@@ -187,10 +187,10 @@ export const getuser = createAsyncThunk(
 
 export const signin = createAsyncThunk(
   'user/signins',
-  async ({ eventid, formdata }, { rejectWithValue }) => {
+  async ({ eventid, formData }, { rejectWithValue }) => {
     try {
       const response = await axios.post(register(eventid),
-        formdata
+        formData
         ,
         {
           headers: {

@@ -103,7 +103,7 @@ export default function Customer() {
         setIsUploading(true);
 
         const formData = {
-            customerId: String(profile.userId),
+            customerId: profile.userId,
             images: selectedImages.map(img => img.file)
         };
     

@@ -491,14 +491,14 @@ export default function Customer() {
                 </Modal>
 
                 {/* Face Upload Modal */}
-                {!ModalRegister && 
+                {!ModalRegister && <>
                     <ModalFaceUpload
                         isOpen={isFaceUploadModalOpen}
                         onClose={() => setIsFaceUploadModalOpen(false)}
                         onSubmit={handleFaceImageUpload}
                         profile={profile}
                     />
-                }
+                
 
                 {/* Face Scan Modal */}
                 {!isFaceUploadModalOpen && 
@@ -509,6 +509,8 @@ export default function Customer() {
                         onSuccess={handleFaceScanSuccess}
                     />
                 }
+                
+                </>}
             </div>
 
             {/* Registration Modal */}

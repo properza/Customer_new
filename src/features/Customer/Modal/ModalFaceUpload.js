@@ -27,6 +27,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
     const [isProcessing, setIsProcessing] = useState(false); // สถานะการประมวลผล
     const [countdown, setCountdown] = useState(null); // นับถอยหลังสำหรับการถ่ายรูปอัตโนมัติ
     const [capturedImage, setCapturedImage] = useState(null); // เพิ่มตัวแปร capturedImage ที่นี่
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         if (profile) {
@@ -130,7 +131,10 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                 setCountdown(null); // รีเซ็ตนับถอยหลังหลังถ่ายรูป
             };
         }
+        setIsSubmitting(false);
     };
+
+    
 
     // ฟังก์ชันบันทึก/อัปโหลด
     const handleSubmit = () => {
@@ -143,6 +147,8 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             alert('ภาพไม่ชัดเจน กรุณาถ่ายใหม่');
             return;
         }
+
+        setIsSubmitting(true);
 
         const file = dataURLtoFile(imageSrc, 'face.jpg');
 
@@ -263,7 +269,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                                     }`}
                                 disabled={status !== 'ใช้ได้'}
                             >
-                                บันทึก
+                                {isSubmitting ? 'กำลังบันทึก...' : 'บันทึก'}
                             </button>
                         </div>
                     </>

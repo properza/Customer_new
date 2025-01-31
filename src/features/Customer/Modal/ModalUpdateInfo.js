@@ -302,7 +302,7 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
                     onChange={handleInputChange}
                     className="border p-2 mb-2 w-full rounded-md"
                 >
-                    <option value="" disabled>เลือกระดับ</option>
+                    <option value="" disabled>เลือกระดับการศึกษา</option>
                     <option value="ปวช.">ปวช.</option>
                     <option value="ปวส.">ปวส.</option>
                     <option value="ป.ตรี">ป.ตรี</option>

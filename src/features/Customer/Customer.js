@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import ReactPaginate from 'react-paginate';
 import Top from './Top';
 import TitleCard from '../../components/Cards/TitleCard';
-import { loginWithLine, resetState, updateinfo, gethistory, upFaceurl, signin, getrewarddata, gethistoryreward, redeemReward } from '../common/userSlice';
+import { loginWithLine, resetState, updateinfo, gethistory, upFaceurl, signin, getrewarddata, gethistoryreward, redeemReward, useRewards } from '../common/userSlice';
 import classNames from 'classnames';
 import Modal from './Modal/Modal';
 import ModalUpdateInfo from './Modal/ModalUpdateInfo';
@@ -85,7 +85,6 @@ export default function Customer() {
         }
     }, [customerinfo, referral]);
 
-    // เพิ่ม useEffect เพื่อปิดโมดัลเมื่อมี customerinfo
     useEffect(() => {
         if (customerinfo) {
             setIsModalOpen(false);
@@ -93,7 +92,6 @@ export default function Customer() {
     }, [customerinfo]);
 
     const handleRedeemClick = (reward) => {
-        // แสดงยืนยันการแลกรางวัลก่อน
         Swal.fire({
             title: 'คุณต้องการแลกของรางวัลนี้หรือไม่?',
             text: `รางวัล: ${reward.reward_name} ต้องใช้แต้ม ${reward.points_required} แต้ม`,
@@ -144,20 +142,18 @@ export default function Customer() {
     };
 
     const handleuseReward = (reward) => {
-        // Create the formData object with customerId and rewardId
         const formData = {
-            customerId: profile.userId,  // customer ID from profile
-            rewardId: reward.id, // reward ID from the clicked reward
+            customerId: profile.userId,
+            rewardId: reward.id,
         };
     
-        // Dispatch the useRewards action with the formData
         dispatch(useRewards({ formData }))
             .unwrap()
             .then((response) => {
                 Swal.fire({
                     icon: 'success',
-                    title: 'แลกรางวัลสำเร็จ',
-                    text: 'คุณได้แลกรางวัลสำเร็จแล้ว',
+                    title: 'ใช้รางวัลสำเร็จ',
+                    text: 'คุณได้ใช้รางวัลสำเร็จแล้ว',
                     timer: 1500,
                     showConfirmButton: false,
                     toast: true,
@@ -171,7 +167,7 @@ export default function Customer() {
             .catch((error) => {
                 Swal.fire({
                     icon: 'error',
-                    title: 'เกิดข้อผิดพลาดในการแลกรางวัล',
+                    title: 'เกิดข้อผิดพลาดในการใช้ของรางวัล',
                     text: error.message || 'กรุณาลองใหม่',
                     timer: 1500,
                     showConfirmButton: false,

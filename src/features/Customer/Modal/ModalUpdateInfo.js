@@ -123,6 +123,14 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
                 // เมื่อเลือกคณะ ต้องเคลียร์ค่า branch_st
                 isValid = true;
                 break;
+            case 'levelST':
+                // ตรวจสอบว่าเป็นตัวเลขและเครื่องหมาย - เท่านั้น
+                regex = /^[0-9\-]*$/;
+                isValid = regex.test(value);
+                if (!isValid && value !== '') {
+                    errorMessage = 'กรุณากรอกเฉพาะตัวเลขเท่านั้น';
+                }
+                break;
             default:
                 isValid = true;
         }
@@ -298,9 +306,9 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
                     ))}
                 </select>
                 {errors.branch_st && <p className="text-red-500 text-sm mb-2">{errors.branch_st}</p>}
-                
+
                 {/* สาขาเพิ่มเติมถ้าจำเป็น */}
-                
+
                 {/* <input
                     type="text"
                     name="branch_st_other"

@@ -95,9 +95,9 @@ export default function Customer() {
     const handleCloseFaceScanModal = () => {
         setIsFaceScanModalOpen(false);
         setModalRegister(false);
-        setReferral(null);
-        navigate(location.pathname, { replace: true });
-        window.location.reload();
+        // setReferral(null);
+        // navigate(location.pathname, { replace: true });
+        // window.location.reload();
     };
 
     const handleRedeemClick = (reward) => {

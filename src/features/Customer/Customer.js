@@ -143,6 +143,45 @@ export default function Customer() {
         });
     };
 
+    const handleuseReward = (reward) => {
+        // Create the formData object with customerId and rewardId
+        const formData = {
+            customerId: profile.userId,  // customer ID from profile
+            rewardId: reward.id, // reward ID from the clicked reward
+        };
+    
+        // Dispatch the useRewards action with the formData
+        dispatch(useRewards({ formData }))
+            .unwrap()
+            .then((response) => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'แลกรางวัลสำเร็จ',
+                    text: 'คุณได้แลกรางวัลสำเร็จแล้ว',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true,
+                });
+                // Reload reward and history data to reflect the updated status
+                dispatch(getrewarddata({ page: currentPage, userID: profile.userId }));
+                dispatch(gethistoryreward({ page: currentPage, userID: profile.userId }));
+            })
+            .catch((error) => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาดในการแลกรางวัล',
+                    text: error.message || 'กรุณาลองใหม่',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true,
+                });
+            });
+    };
+
     const handleFileChange = (event) => {
         const files = Array.from(event.target.files);
         const newImages = files.map((file) => ({
@@ -321,10 +360,6 @@ export default function Customer() {
         setIsFaceScanModalOpen(false);
         setIsReferralModalOpen(true);
 
-    };
-
-    const handleFaceResetUpload = () => {
-        setIsFaceUploadModalOpen(true);
     };
 
     // Handle errors or loading states as needed
@@ -574,7 +609,7 @@ export default function Customer() {
                                                 <p>{reward.reward_name}</p>
                                                 <p>{reward.status}</p>
                                             </div>
-                                            <button className="bg-blue-500 text-white px-3 py-1 mt-2 rounded-md w-full hover:bg-blue-400">
+                                            <button onClick={()=>handleuseReward(reward)} className="bg-blue-500 text-white px-3 py-1 mt-2 rounded-md w-full hover:bg-blue-400">
                                                 ใช้รางวัล
                                             </button>
                                         </div>

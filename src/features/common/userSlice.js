@@ -20,6 +20,7 @@ const redeemR = `${baseurl}customer/rewards/redeem`
 const historyrewardURL = ( page ,userID )=> `${baseurl}customer/historyrewards/${userID}?page=${page}&per_page=10`
 const uploadFaceUrl = `${baseurl}customer/customerinfo/uploadfaceid`
 const register = (eventid) => `${baseurl}events/registerCustomer/${eventid}`;
+const useReward = `${baseurl}customer/rewards/use`
 
 function mobileCheck() {
   const userAgent = navigator.userAgent || navigator.vendor || window.opera;
@@ -169,6 +170,23 @@ export const redeemReward = createAsyncThunk(
   async ({ formData }, { rejectWithValue }) => {
     try {
       const response = await axios.post(redeemR, formData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response ? error.response.data : error.message);
+    }
+  }
+);
+
+export const useRewards = createAsyncThunk(
+  'user/useRedeemed',
+  async ({ formData }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(useReward, formData, {
         headers: {
           'Content-Type': 'application/json',
         },

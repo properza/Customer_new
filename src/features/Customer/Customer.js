@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import ReactPaginate from 'react-paginate';
 import Top from './Top';
 import TitleCard from '../../components/Cards/TitleCard';
-import { loginWithLine, resetState, updateinfo, gethistory, upFaceurl, signin, getrewarddata, gethistoryreward, redeemReward, useRewards } from '../common/userSlice';
+import { loginWithLine, resetState, updateinfo, gethistory, upFaceurl, signin, getrewarddata, gethistoryreward, redeemReward, usedRewards } from '../common/userSlice';
 import classNames from 'classnames';
 import Modal from './Modal/Modal';
 import ModalUpdateInfo from './Modal/ModalUpdateInfo';
@@ -14,12 +14,13 @@ import ModalFaceScan from './Modal/ModalFaceScan';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
 import { th } from 'date-fns/locale';
-import { useLocation } from 'react-router-dom';
+import { useLocation , useNavigate  } from 'react-router-dom';
 import { loadModels } from './Modal/utils/faceApi';
 
 export default function Customer() {
     const dispatch = useDispatch();
     const location = useLocation();
+    const navigate  = useNavigate();
     const [activebtn, setactivebtn] = useState('history');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [ModalRegister, setModalRegister] = useState(false);
@@ -91,6 +92,14 @@ export default function Customer() {
         }
     }, [customerinfo]);
 
+    const handleCloseFaceScanModal = () => {
+        setIsFaceScanModalOpen(false);
+        setModalRegister(false);
+        setReferral(null);
+        navigate(location.pathname, { replace: true });
+        window.location.reload();
+    };
+
     const handleRedeemClick = (reward) => {
         Swal.fire({
             title: 'คุณต้องการแลกของรางวัลนี้หรือไม่?',
@@ -142,40 +151,53 @@ export default function Customer() {
     };
 
     const handleuseReward = (reward) => {
-        const formData = {
-            customerId: profile.userId,
-            rewardId: reward.id,
-        };
+        Swal.fire({
+            title: 'คุณต้องการใช้ของรางวัลนี้หรือไม่?',
+            text: `ต้องการใช้แต้ม ${reward.points_required} แต้ม`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'ตกลง',
+            cancelButtonText: 'ยกเลิก',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // ถ้าผู้ใช้กด "ตกลง" จะทำการส่งข้อมูล
+                const formData = {
+                    customerId: profile.userId,  // profile.userId ต้องมีข้อมูล
+                    rewardId: reward.reward_id,
+                };
     
-        dispatch(useRewards({ formData }))
-            .unwrap()
-            .then((response) => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'ใช้รางวัลสำเร็จ',
-                    text: 'คุณได้ใช้รางวัลสำเร็จแล้ว',
-                    timer: 1500,
-                    showConfirmButton: false,
-                    toast: true,
-                    position: 'top-end',
-                    timerProgressBar: true,
-                });
-                // Reload reward and history data to reflect the updated status
-                dispatch(getrewarddata({ page: currentPage, userID: profile.userId }));
-                dispatch(gethistoryreward({ page: currentPage, userID: profile.userId }));
-            })
-            .catch((error) => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาดในการใช้ของรางวัล',
-                    text: error.message || 'กรุณาลองใหม่',
-                    timer: 1500,
-                    showConfirmButton: false,
-                    toast: true,
-                    position: 'top-end',
-                    timerProgressBar: true,
-                });
-            });
+                dispatch(usedRewards({ formData }))
+                    .unwrap()
+                    .then((response) => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ใช้รางวัลสำเร็จ',
+                            text: 'คุณได้ใช้รางวัลสำเร็จแล้ว',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end',
+                            timerProgressBar: true,
+                        });
+                        dispatch(getrewarddata({ page: currentPage, userID: profile.userId }));
+                        dispatch(gethistoryreward({ page: currentPage, userID: profile.userId }));
+                    })
+                    .catch((error) => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาดในการใช้รางวัล',
+                            text: error.message || 'กรุณาลองใหม่',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end',
+                            timerProgressBar: true,
+                        });
+                    });
+            }
+        });
     };
 
     const handleFileChange = (event) => {
@@ -241,7 +263,7 @@ export default function Customer() {
             }).then(() => {
                 setIsFaceUploadModalOpen(false);
                 dispatch(loginWithLine());
-                setReferral(null);
+                setReferral('');
             });
         } catch (error) {
             console.error("Error uploading face image: ", error);
@@ -725,7 +747,7 @@ export default function Customer() {
                     {!isFaceUploadModalOpen &&
                         <ModalFaceScan
                             isOpen={isFaceScanModalOpen}
-                            onClose={() => setIsFaceScanModalOpen(false)}
+                            onClose={handleCloseFaceScanModal}
                             faceUrl={customerinfo?.faceUrl}
                             onSuccess={handleFaceScanSuccess}
                         />

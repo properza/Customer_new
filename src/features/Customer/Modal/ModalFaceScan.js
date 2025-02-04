@@ -8,7 +8,7 @@ const videoConstraints = {
     facingMode: 'user',
 };
 
-function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess ,inSuccess }) {
+function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     const webcamRef = useRef(null);
     const [isModelsLoaded, setIsModelsLoaded] = useState(false);
     const [refDescriptor, setRefDescriptor] = useState(null);
@@ -82,7 +82,6 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess ,inSuccess }) {
                         timer:1500,
                         showConfirmButton:false
                     });
-                    inSuccess();
                     handleCloseModal();
                 }
             } catch (error) {
@@ -94,7 +93,6 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess ,inSuccess }) {
                     timer:1500,
                     showConfirmButton:false
                 });
-                inSuccess();
                 // handleCloseModal();
             }
         }

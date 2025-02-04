@@ -6,10 +6,10 @@ import liff from "@line/liff";
 const baseurl = 'https://project-dev-0hj6.onrender.com/';
 
 //line liff use
-const lineid = `2002511864-Lw8l8Jo8`;
+//const lineid = `2002511864-Lw8l8Jo8`;
 
 //line liff dev
-//const lineid = `2002511864-bjvMvjkv`;
+const lineid = `2002511864-bjvMvjkv`;
 
 // Endpoint
 const getprofile = `${baseurl}customer/customerinfo`;
@@ -20,7 +20,7 @@ const redeemR = `${baseurl}customer/rewards/redeem`
 const historyrewardURL = ( page ,userID )=> `${baseurl}customer/historyrewards/${userID}?page=${page}&per_page=10`
 const uploadFaceUrl = `${baseurl}customer/customerinfo/uploadfaceid`
 const register = (eventid) => `${baseurl}events/registerCustomer/${eventid}`;
-const useReward = `${baseurl}customer/rewards/use`
+const useRewardUrl = `${baseurl}customer/rewards/use`
 
 function mobileCheck() {
   const userAgent = navigator.userAgent || navigator.vendor || window.opera;
@@ -182,13 +182,13 @@ export const redeemReward = createAsyncThunk(
   }
 );
 
-export const useRewards = createAsyncThunk(
+export const usedRewards = createAsyncThunk(
   'user/useRedeemed',
   async ({ formData }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(useReward, formData, {
+      const response = await axios.post(useRewardUrl, formData, {
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
       });
 

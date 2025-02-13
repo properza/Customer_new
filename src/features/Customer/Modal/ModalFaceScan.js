@@ -60,8 +60,8 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 setReferenceImage(faceUrl);
 
                 const detectionOptions = new faceapi.TinyFaceDetectorOptions({
-                    inputSize: 512, // ขนาดอินพุตเพื่อเพิ่มความแม่นยำ
-                    scoreThreshold: 0.5, // ค่าความไวของการตรวจจับ
+                    inputSize: 512,
+                    scoreThreshold: 0.5,
                 });
 
                 const detection = await faceapi
@@ -106,6 +106,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isModelsLoaded, refDescriptor, isWebcamReady, hasVerified, isOpen, isBrowserSupported]);
+    
 
     const verifyFace = useCallback(async () => {
         setHasVerified(true); // Prevent re-verification

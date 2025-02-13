@@ -234,6 +234,8 @@ export default function Customer() {
             return;
         }
 
+        handleDeclineReferral();
+
         setIsUploading(true);
 
         const formData = new FormData();
@@ -263,10 +265,14 @@ export default function Customer() {
             }).then(() => {
                 setIsFaceUploadModalOpen(false);
                 dispatch(loginWithLine());
-                setReferral('');
+                // setReferral('');
+                setReferral(null);
+                navigate(location.pathname, { replace: true });
+                window.location.reload();
             });
         } catch (error) {
             console.error("Error uploading face image: ", error);
+            handleDeclineReferral();
             Swal.fire({
                 icon: 'error',
                 title: 'ลงทะเบียนไม่สำเร็จ',
@@ -282,7 +288,10 @@ export default function Customer() {
             });
         } finally {
             setIsUploading(false);
+            // setReferral(null);
             setReferral(null);
+            navigate(location.pathname, { replace: true });
+            window.location.reload();
         }
     };
 

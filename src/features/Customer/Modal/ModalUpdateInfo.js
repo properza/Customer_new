@@ -333,6 +333,7 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
                 </select>
 
                 {/* ประเภทนักศึกษา (select) */}
+                {!formData.st_tpye &&
                 <select
                     name="st_tpye"
                     value={formData.st_tpye}
@@ -342,7 +343,7 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
                     <option value="" disabled>เลือกประเภทนักศึกษา</option>
                     <option value="ทั่วไป">ทั่วไป</option>
                     <option value="กยศ.">กยศ.</option>
-                </select>
+                </select>}
 
                 {/* นักศึกษาปีที่ (ตัวเลข 1-8) */}
                 <input

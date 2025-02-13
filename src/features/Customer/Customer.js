@@ -292,7 +292,7 @@ export default function Customer() {
                 setIsFaceUploadModalOpen(false);
                 dispatch(loginWithLine());
                 setReferral(null);
-                // navigate(location.pathname, { replace: true });
+                navigate(location.pathname, { replace: true });
                 // window.location.reload();
             });
         } catch (error) {
@@ -314,7 +314,7 @@ export default function Customer() {
         } finally {
             setIsUploading(false);
             setReferral(null);
-            // navigate(location.pathname, { replace: true });
+            navigate(location.pathname, { replace: true });
             // window.location.reload();
         }
     };

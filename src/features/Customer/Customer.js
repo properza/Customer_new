@@ -294,6 +294,7 @@ export default function Customer() {
                 setReferral(null);
                 navigate(location.pathname, { replace: true });
                 // window.location.reload();
+                handleDeclineReferral();
             });
         } catch (error) {
             console.error("Error uploading face image: ", error);
@@ -316,6 +317,7 @@ export default function Customer() {
             setReferral(null);
             navigate(location.pathname, { replace: true });
             // window.location.reload();
+            handleDeclineReferral();
         }
     };
 

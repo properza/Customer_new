@@ -233,14 +233,14 @@ export default function Customer() {
             });
             return;
         }
-
+    
         handleDeclineReferral();
-
+    
         setIsUploading(true);
-
+    
         const formData = new FormData();
         formData.append("customerId", profile.userId);
-
+    
         let hasValidFile = false; // ตรวจสอบว่ามีไฟล์ที่ถูกต้องหรือไม่
         selectedImages.forEach((img, index) => {
             if (img.file instanceof File) {
@@ -250,10 +250,39 @@ export default function Customer() {
                 console.warn(`⚠️ รูปที่ ${index + 1} ไม่มีไฟล์ที่ถูกต้อง`, img);
             }
         });
-
+    
+        // ใช้ Geolocation API เพื่อดึงค่าพิกัด GPS ของเครื่อง
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const customerLatitude = position.coords.latitude;
+                const customerLongitude = position.coords.longitude;
+    
+                // เพิ่ม customerLatitude และ customerLongitude ไปใน formData
+                formData.append("customerLatitude", customerLatitude);
+                formData.append("customerLongitude", customerLongitude);
+    
+                // เริ่มทำการสมัครสมาชิกหลังจากได้พิกัด
+                submitFormData(formData);
+            },
+            (error) => {
+                console.error("Error getting GPS location: ", error);
+                Swal.fire({
+                    icon: "error",
+                    title: "ไม่สามารถดึงพิกัด GPS ได้",
+                    text: "กรุณาตรวจสอบการตั้งค่าของอุปกรณ์",
+                    timer: 3000,
+                    showConfirmButton: false,
+                });
+                setIsUploading(false);
+                handleDeclineReferral();
+            }
+        );
+    };
+    
+    const submitFormData = async (formData) => {
         try {
             const res = await dispatch(signin({ eventid: referral, formData })).unwrap();
-            
+    
             Swal.fire({
                 icon: 'success',
                 title: 'ลงทะเบียนสำเร็จ',
@@ -265,7 +294,6 @@ export default function Customer() {
             }).then(() => {
                 setIsFaceUploadModalOpen(false);
                 dispatch(loginWithLine());
-                // setReferral('');
                 setReferral(null);
                 navigate(location.pathname, { replace: true });
                 window.location.reload();
@@ -288,7 +316,6 @@ export default function Customer() {
             });
         } finally {
             setIsUploading(false);
-            // setReferral(null);
             setReferral(null);
             navigate(location.pathname, { replace: true });
             window.location.reload();

@@ -1,11 +1,10 @@
-// src/features/common/Modal/ModalFaceScan.js
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import * as faceapi from 'face-api.js';
 import Swal from 'sweetalert2';
 
 const videoConstraints = {
-    facingMode: 'user',
+    facingMode: 'user', // กล้องหน้า (mobile)
 };
 
 function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
@@ -23,9 +22,9 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     useEffect(() => {
         async function loadModels() {
             try {
-                const MODEL_URL = '/models';
+                const MODEL_URL = '/models'; // URL สำหรับโหลดโมเดล face-api.js
                 console.log("Loading face-api models from:", MODEL_URL);
-                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+                await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL); // ใช้โมเดล DNN สำหรับความแม่นยำสูง
                 await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
                 setIsModelsLoaded(true);
@@ -61,8 +60,8 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 setReferenceImage(faceUrl);
 
                 const detectionOptions = new faceapi.TinyFaceDetectorOptions({
-                    inputSize: 512,
-                    scoreThreshold: 0.5,
+                    inputSize: 512, // ขนาดอินพุตเพื่อเพิ่มความแม่นยำ
+                    scoreThreshold: 0.5, // ค่าความไวของการตรวจจับ
                 });
 
                 const detection = await faceapi
@@ -79,8 +78,8 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                         icon: 'error',
                         title: 'ไม่พบใบหน้าในรูปอ้างอิง',
                         text: 'กรุณาอัปโหลดรูปใบหน้าใหม่ที่มีใบหน้าชัดเจน',
-                        timer:1500,
-                        showConfirmButton:false
+                        timer: 1500,
+                        showConfirmButton: false
                     });
                     handleCloseModal();
                 }
@@ -90,8 +89,8 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     icon: 'error',
                     title: 'เกิดข้อผิดพลาดในการโหลดรูปอ้างอิง',
                     text: 'กรุณาตรวจสอบ URL หรือ Backend',
-                    timer:1500,
-                    showConfirmButton:false
+                    timer: 1500,
+                    showConfirmButton: false
                 });
                 // handleCloseModal();
             }
@@ -212,7 +211,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
             const distance = faceapi.euclideanDistance(refDescriptor, probeDetection.descriptor);
             console.log("Distance:", distance);
 
-            const threshold = 0.6;
+            const threshold = 0.4; // ลดค่าความคลาดเคลื่อนเพื่อเพิ่มความแม่นยำ
             if (distance < threshold) {
                 await Swal.fire({
                     icon: 'success',
@@ -271,7 +270,6 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
 
     // ฟังก์ชันสำหรับเปิดแท็บใหม่ในเว็บเบราว์เซอร์ที่รองรับ
     const openInSupportedBrowser = () => {
-        // เปิดแท็บใหม่ที่ URL ปัจจุบัน
         window.open(window.location.href, '_blank');
         handleCloseModal();
     };

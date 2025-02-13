@@ -234,8 +234,6 @@ export default function Customer() {
             return;
         }
     
-        handleDeclineReferral();
-    
         setIsUploading(true);
     
         const formData = new FormData();
@@ -274,7 +272,6 @@ export default function Customer() {
                     showConfirmButton: false,
                 });
                 setIsUploading(false);
-                handleDeclineReferral();
             }
         );
     };

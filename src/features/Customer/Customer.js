@@ -79,14 +79,18 @@ export default function Customer() {
         }
 
         const formData = new FormData();
-        formData.append('customer_id', profile.userId);
-        formData.append('event_name', eventName);
+        formData.append('customerId', profile.userId);  // แฟ้ม customerId
+        formData.append('event_name', eventName);  // แฟ้ม event_name
 
-        console.log('Form Data:', formData); 
-
-        selectedActivityImages.forEach((img, index) => {
-            formData.append('images', img.file);
+        // การเพิ่มไฟล์หลายไฟล์ใน images
+        selectedActivityImages.forEach((img) => {
+            formData.append('images', img.file);  // เพิ่มไฟล์ลงไป
         });
+
+        // ตรวจสอบข้อมูลใน FormData
+        for (let [key, value] of formData.entries()) {
+            console.log(`${key}: ${value}`);
+        }
 
         // ส่งข้อมูลไปยัง backend
         dispatch(uploadEventData(formData))
@@ -131,7 +135,7 @@ export default function Customer() {
         setSelectedImageIndex((prevIndex) => (prevIndex - 1 + selectedImage.length) % selectedImage.length);
     };
 
-    
+
 
     useEffect(() => {
         loadModels().then(() => console.log("Models loaded"));

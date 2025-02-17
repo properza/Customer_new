@@ -18,6 +18,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { loadModels } from './Modal/utils/faceApi';
 
 export default function Customer() {
+    const { profile, customerinfo, isLoading, error } = useSelector((state) => state.user);
     const dispatch = useDispatch();
     const location = useLocation();
     const navigate = useNavigate();
@@ -130,8 +131,7 @@ export default function Customer() {
         setSelectedImageIndex((prevIndex) => (prevIndex - 1 + selectedImage.length) % selectedImage.length);
     };
 
-    // Select necessary state from Redux store
-    const { profile, customerinfo, isLoading, error } = useSelector((state) => state.user);
+    
 
     useEffect(() => {
         loadModels().then(() => console.log("Models loaded"));

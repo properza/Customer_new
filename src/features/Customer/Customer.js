@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import ReactPaginate from 'react-paginate';
 import Top from './Top';
 import TitleCard from '../../components/Cards/TitleCard';
-import { loginWithLine, resetState, updateinfo, gethistory, upFaceurl, signin, getrewarddata, gethistoryreward, redeemReward, usedRewards } from '../common/userSlice';
+import { loginWithLine, resetState, updateinfo, gethistory, upFaceurl, signin, getrewarddata, gethistoryreward, redeemReward, usedRewards, getCloud, uploadEventData } from '../common/userSlice';
 import classNames from 'classnames';
 import Modal from './Modal/Modal';
 import ModalUpdateInfo from './Modal/ModalUpdateInfo';
@@ -14,19 +14,21 @@ import ModalFaceScan from './Modal/ModalFaceScan';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
 import { th } from 'date-fns/locale';
-import { useLocation , useNavigate  } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { loadModels } from './Modal/utils/faceApi';
 
 export default function Customer() {
     const dispatch = useDispatch();
     const location = useLocation();
-    const navigate  = useNavigate();
+    const navigate = useNavigate();
     const [activebtn, setactivebtn] = useState('history');
+    const [activebtn2, setactivebtn2] = useState('history');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [ModalRegister, setModalRegister] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const historyData = useSelector(state => state.user.gethistorysData);
     const historyreward = useSelector(state => state.user.gethistoryrewards);
+    const Cloud = useSelector(state => state.user.getClouds);
     const getreward = useSelector(state => state.user.getrewardslist);
     const [isModalDetailOpen, setIsModalDetailOpen] = useState(false);
     const [selectedActivity, setSelectedActivity] = useState(null);
@@ -36,6 +38,95 @@ export default function Customer() {
     const [isFaceScanModalOpen, setIsFaceScanModalOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [selectedImages, setSelectedImages] = useState([]);
+
+    const [isSpecialActivityModalOpen, setIsSpecialActivityModalOpen] = useState(false);
+    const [eventName, setEventName] = useState('');
+    const [selectedActivityImages, setSelectedActivityImages] = useState([]);
+
+    const handleImageChange = (event) => {
+        const files = Array.from(event.target.files);
+        if (selectedActivityImages.length + files.length > 10) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'ไม่สามารถเพิ่มรูปได้มากกว่า 10 รูป',
+                timer: 1500,
+                showConfirmButton: false,
+            });
+            return;
+        }
+
+        const newImages = files.map(file => ({
+            file,
+            preview: URL.createObjectURL(file),
+        }));
+        setSelectedActivityImages(prevImages => [...prevImages, ...newImages]);
+    };
+
+    const handleRemoveImageEvent = (index) => {
+        setSelectedActivityImages(prevImages => prevImages.filter((_, i) => i !== index));
+    };
+
+    const handleSubmitSpecialActivity = () => {
+        if (!eventName || selectedActivityImages.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'กรุณากรอกข้อมูลให้ครบ',
+                timer: 1500,
+                showConfirmButton: false,
+            });
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('customer_id', profile.userId);
+        formData.append('event_name', eventName);
+
+        selectedActivityImages.forEach((img, index) => {
+            formData.append('images', img.file);
+        });
+
+        // ส่งข้อมูลไปยัง backend
+        dispatch(uploadEventData(formData))
+            .unwrap()
+            .then(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'ข้อมูลถูกส่งเรียบร้อย',
+                    timer: 1500,
+                    showConfirmButton: false,
+                });
+                setIsSpecialActivityModalOpen(false);
+                setSelectedActivityImages([]);
+                setEventName('');
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: error.message || 'กรุณาลองใหม่',
+                    timer: 1500,
+                    showConfirmButton: false,
+                });
+            });
+    };
+
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+    const handleImageClick = (images, index) => {
+        setSelectedImage(images);  // เก็บ array ของภาพ
+        setSelectedImageIndex(index);  // เก็บ index ของภาพที่เลือก
+        setIsImageModalOpen(true); // เปิด Modal
+    };
+
+    const handleNextImage = () => {
+        setSelectedImageIndex((prevIndex) => (prevIndex + 1) % selectedImage.length);
+    };
+
+    const handlePrevImage = () => {
+        setSelectedImageIndex((prevIndex) => (prevIndex - 1 + selectedImage.length) % selectedImage.length);
+    };
 
     // Select necessary state from Redux store
     const { profile, customerinfo, isLoading, error } = useSelector((state) => state.user);
@@ -62,6 +153,7 @@ export default function Customer() {
             dispatch(gethistory({ page: currentPage, userID: profile.userId }));
             dispatch(getrewarddata({ page: currentPage, userID: profile.userId }));
             dispatch(gethistoryreward({ page: currentPage, userID: profile.userId }));
+            dispatch(getCloud({ page: currentPage, userID: profile.userId }));
         }
     }, [dispatch, profile, currentPage]);
 
@@ -117,7 +209,7 @@ export default function Customer() {
                     customerId: profile.userId,  // profile.userId ต้องมีข้อมูล
                     rewardId: reward.id,
                 };
-    
+
                 dispatch(redeemReward({ formData }))
                     .unwrap()
                     .then((response) => {
@@ -167,7 +259,7 @@ export default function Customer() {
                     customerId: profile.userId,  // profile.userId ต้องมีข้อมูล
                     rewardId: reward.reward_id,
                 };
-    
+
                 dispatch(usedRewards({ formData }))
                     .unwrap()
                     .then((response) => {
@@ -233,12 +325,12 @@ export default function Customer() {
             });
             return;
         }
-    
+
         setIsUploading(true);
-    
+
         const formData = new FormData();
         formData.append("customerId", profile.userId);
-    
+
         let hasValidFile = false; // ตรวจสอบว่ามีไฟล์ที่ถูกต้องหรือไม่
         selectedImages.forEach((img, index) => {
             if (img.file instanceof File) {
@@ -248,17 +340,17 @@ export default function Customer() {
                 console.warn(`⚠️ รูปที่ ${index + 1} ไม่มีไฟล์ที่ถูกต้อง`, img);
             }
         });
-    
+
         // ใช้ Geolocation API เพื่อดึงค่าพิกัด GPS ของเครื่อง
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const customerLatitude = position.coords.latitude;
                 const customerLongitude = position.coords.longitude;
-    
+
                 // เพิ่ม customerLatitude และ customerLongitude ไปใน formData
                 formData.append("customerLatitude", customerLatitude);
                 formData.append("customerLongitude", customerLongitude);
-    
+
                 // เริ่มทำการสมัครสมาชิกหลังจากได้พิกัด
                 submitFormData(formData);
             },
@@ -275,11 +367,11 @@ export default function Customer() {
             }
         );
     };
-    
+
     const submitFormData = async (formData) => {
         try {
             const res = await dispatch(signin({ eventid: referral, formData })).unwrap();
-    
+
             Swal.fire({
                 icon: 'success',
                 title: 'ลงทะเบียนสำเร็จ',
@@ -458,6 +550,12 @@ export default function Customer() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
         </svg>;
 
+    const image =
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+        </svg>;
+
+
     return (
         <>
             <Top />
@@ -509,7 +607,7 @@ export default function Customer() {
                             {icons}
                             <p className='text-white font-medium text-base'>คะแนน : {customerinfo?.total_point || 0}</p>
                         </div>
-                        <button className='bg-[#FF9C00] text-white rounded-md px-2 py-1'>กิจกรรมพิเศษ</button>
+                        <button className='bg-[#FF9C00] text-white rounded-md px-2 py-1' onClick={() => setIsSpecialActivityModalOpen(true)} >กิจกรรมพิเศษ</button>
                     </div>
                 </div>
             </div>
@@ -536,72 +634,134 @@ export default function Customer() {
             </div>
 
             <div className="w-[70%] mx-auto max-lg:w-[90%]">
-                {activebtn === 'history' &&
-                    <TitleCard title={'ประวัติกิจกรรม'} title2={`ทั้งหมด ${historyData.meta?.total || 0} รายการ`} topMargin={'mt-1'}>
-                        <div className="overflow-auto h-[45vh]">
-                            <table className='table w-full border-collapse border border-gray-200'>
-                                <thead className='bg-[#F7D4E8]'>
-                                    <tr>
-                                        <th className="border px-4 py-2">ลำดับ</th>
-                                        <th className="border px-4 py-2">กิจกรรม</th>
-                                        <th className="border px-4 py-2">ประเภทกิจกรรม</th>
-                                        <th className="border px-4 py-2">การเข้าร่วม</th>
-                                        <th className="border px-4 py-2">เวลาเข้าร่วม</th>
-                                        <th className="border px-4 py-2">รายละเอียด</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {/* Replace with dynamic data */}
-                                    {historyData.data ?
-                                        historyData.data?.map((activity, index) => (
-                                            <tr key={activity.id}>
-                                                <td className="border px-4 py-2">{index + 1}</td>
-                                                <td className="border px-4 py-2">{activity.activityName}</td>
-                                                <td className="border px-4 py-2">{customerinfo?.st_tpye}</td>
-                                                <td className="border px-4 py-2">{activity.created_at ? format(new Date(activity.created_at), "d MMM yyyy hh:mm", { locale: th }) : activity.status}</td>
-                                                <td className="border px-4 py-2">{convertPointsToTime(activity.pointsEarned)}</td>
-                                                <td className="border px-4 py-2">
-                                                    <button
-                                                        className='flex justify-center w-full cursor-pointer'
-                                                        onClick={() => handleActivityClick(activity)}
-                                                    >
-                                                        {iconView}
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        )) :
-                                        <tr>
-                                            <td colSpan="5" className="text-center py-4">ไม่มีข้อมูล</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                            {historyData.meta?.total >= 10 &&
-                                <div className="flex justify-end mt-10">
-                                    <ReactPaginate
-                                        previousLabel={"<"}
-                                        nextLabel={">"}
-                                        breakLabel={"..."}
-                                        pageCount={historyData.meta?.last_page || 1}
-                                        marginPagesDisplayed={2}
-                                        pageRangeDisplayed={3}
-                                        onPageChange={handlePageChange}
-                                        containerClassName={"pagination"}
-                                        activeClassName={"active"}
-                                        breakClassName={"page-item"}
-                                        breakLinkClassName={"page-link"}
-                                        pageClassName={"page-item"}
-                                        pageLinkClassName={"page-link"}
-                                        previousClassName={"page-item"}
-                                        previousLinkClassName={"page-link"}
-                                        nextClassName={"page-item"}
-                                        nextLinkClassName={"page-link"}
-                                        disabledClassName={"disabled"}
-                                    />
-                                </div>
-                            }
+                {activebtn === 'history' && <>
+                    <TitleCard title={'ประวัติกิจกรรม'} title2={`ทั้งหมด ${(activebtn === 'history' && activebtn2 === 'history') ? historyData.meta?.total || 0 : Cloud.meta?.total || 0} รายการ`} topMargin={'mt-1'}>
+                        <div className="flex gap-2 mt-[-1rem] mb-2">
+                            <button className={`${(activebtn === 'history' && activebtn2 === 'history') ? 'active' : ''}`} onClick={() => setactivebtn2('history')}>ประวัติกิจกรรม</button>
+                            <button className={`${activebtn2 === 'specialHS' ? 'active' : ''}`} onClick={() => setactivebtn2('specialHS')}>กิจกรรมพิเศษ</button>
                         </div>
-                    </TitleCard>
+                        {(activebtn === 'history' && activebtn2 === 'history') ?
+                            <div className="overflow-auto h-[45vh]">
+                                <table className='table w-full border-collapse border border-gray-200'>
+                                    <thead className='bg-[#F7D4E8]'>
+                                        <tr>
+                                            <th className="border px-4 py-2">ลำดับ</th>
+                                            <th className="border px-4 py-2">กิจกรรม</th>
+                                            <th className="border px-4 py-2">ประเภทกิจกรรม</th>
+                                            <th className="border px-4 py-2">การเข้าร่วม</th>
+                                            <th className="border px-4 py-2">เวลาเข้าร่วม</th>
+                                            <th className="border px-4 py-2">รายละเอียด</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {/* Replace with dynamic data */}
+                                        {historyData.data ?
+                                            historyData.data?.map((activity, index) => (
+                                                <tr key={activity.id}>
+                                                    <td className="border px-4 py-2">{index + 1}</td>
+                                                    <td className="border px-4 py-2">{activity.activityName}</td>
+                                                    <td className="border px-4 py-2">{customerinfo?.st_tpye}</td>
+                                                    <td className="border px-4 py-2">{activity.created_at ? format(new Date(activity.created_at), "d MMM yyyy hh:mm", { locale: th }) : activity.status}</td>
+                                                    <td className="border px-4 py-2">{convertPointsToTime(activity.pointsEarned)}</td>
+                                                    <td className="border px-4 py-2">
+                                                        <button
+                                                            className='flex justify-center w-full cursor-pointer'
+                                                            onClick={() => handleActivityClick(activity)}
+                                                        >
+                                                            {iconView}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            )) :
+                                            <tr>
+                                                <td colSpan="5" className="text-center py-4">ไม่มีข้อมูล</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                                {historyData.meta?.total >= 10 &&
+                                    <div className="flex justify-end mt-10">
+                                        <ReactPaginate
+                                            previousLabel={"<"}
+                                            nextLabel={">"}
+                                            breakLabel={"..."}
+                                            pageCount={historyData.meta?.last_page || 1}
+                                            marginPagesDisplayed={2}
+                                            pageRangeDisplayed={3}
+                                            onPageChange={handlePageChange}
+                                            containerClassName={"pagination"}
+                                            activeClassName={"active"}
+                                            breakClassName={"page-item"}
+                                            breakLinkClassName={"page-link"}
+                                            pageClassName={"page-item"}
+                                            pageLinkClassName={"page-link"}
+                                            previousClassName={"page-item"}
+                                            previousLinkClassName={"page-link"}
+                                            nextClassName={"page-item"}
+                                            nextLinkClassName={"page-link"}
+                                            disabledClassName={"disabled"}
+                                        />
+                                    </div>
+                                }
+                            </div>
+                            :
+
+                            <div className="overflow-auto h-[45vh]">
+                                <table className='table w-full border-collapse border border-gray-200'>
+                                    <thead className='bg-[#F7D4E8]'>
+                                        <tr>
+                                            <th className="border px-4 py-2">ลำดับ</th>
+                                            <th className="border px-4 py-2">กิจกรรม</th>
+                                            <th className="border px-4 py-2">วันที่สร้าง</th>
+                                            <th className="border px-4 py-2">รูปภาพ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {/* Replace with dynamic data */}
+                                        {Cloud.data ?
+                                            Cloud.data?.map((activity, index) => (
+                                                <tr key={activity.id}>
+                                                    <td className="border px-4 py-2">{index + 1}</td>
+                                                    <td className="border px-4 py-2">{activity.event_name}</td>
+                                                    <td className="border px-4 py-2">{activity.created_at ? format(new Date(activity.created_at), "d MMM yyyy hh:mm", { locale: th }) : activity.status}</td>
+                                                    <td className="border px-4 py-2" onClick={() => handleImageClick(activity.images, 0)}> <div className="w-6 h-6">{image}</div></td>
+                                                </tr>
+                                            )) :
+                                            <tr>
+                                                <td colSpan="5" className="text-center py-4">ไม่มีข้อมูล</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                                {Cloud.meta?.total >= 10 &&
+                                    <div className="flex justify-end mt-10">
+                                        <ReactPaginate
+                                            previousLabel={"<"}
+                                            nextLabel={">"}
+                                            breakLabel={"..."}
+                                            pageCount={Cloud.meta?.last_page || 1}
+                                            marginPagesDisplayed={2}
+                                            pageRangeDisplayed={3}
+                                            onPageChange={handlePageChange}
+                                            containerClassName={"pagination"}
+                                            activeClassName={"active"}
+                                            breakClassName={"page-item"}
+                                            breakLinkClassName={"page-link"}
+                                            pageClassName={"page-item"}
+                                            pageLinkClassName={"page-link"}
+                                            previousClassName={"page-item"}
+                                            previousLinkClassName={"page-link"}
+                                            nextClassName={"page-item"}
+                                            nextLinkClassName={"page-link"}
+                                            disabledClassName={"disabled"}
+                                        />
+                                    </div>
+                                }
+                            </div>
+
+                        }
+
+                    </TitleCard></>
                 }
 
                 {activebtn === 'trading' &&
@@ -671,7 +831,7 @@ export default function Customer() {
                                                 <p>{reward.reward_name}</p>
                                                 <p>{reward.status}</p>
                                             </div>
-                                            <button onClick={()=>handleuseReward(reward)} className="bg-blue-500 text-white px-3 py-1 mt-2 rounded-md w-full hover:bg-blue-400">
+                                            <button onClick={() => handleuseReward(reward)} className="bg-blue-500 text-white px-3 py-1 mt-2 rounded-md w-full hover:bg-blue-400">
                                                 ใช้รางวัล
                                             </button>
                                         </div>
@@ -764,6 +924,94 @@ export default function Customer() {
                                 disabled={isUploading}
                             >
                                 {isUploading ? "กำลังลงทะเบียน..." : "ยอมรับ"}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+
+                <Modal isOpen={isImageModalOpen} onClose={() => setIsImageModalOpen(false)}>
+                    <div className="flex justify-center items-center p-4 relative">
+                        {selectedImage && selectedImage.length > 0 && (
+                            <img
+                                src={selectedImage[selectedImageIndex]}
+                                alt="Modal Image"
+                                className="max-w-full max-h-full"
+                            />
+                        )}
+
+                        <button
+                            onClick={handlePrevImage}
+                            className="absolute left-2 top-1/2 transform -translate-y-1/2 text-white text-2xl"
+                        >
+                            &#8592; {/* ลูกศรซ้าย */}
+                        </button>
+
+                        <button
+                            onClick={handleNextImage}
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white text-2xl"
+                        >
+                            &#8594; {/* ลูกศรขวา */}
+                        </button>
+                    </div>
+                </Modal>
+
+                <Modal isOpen={isSpecialActivityModalOpen} onClose={() => setIsSpecialActivityModalOpen(false)}>
+                    <div className="p-4">
+                        <h2 className="text-lg font-bold mb-4">กิจกรรมพิเศษ</h2>
+
+                        {/* ฟอร์มกรอกชื่อกิจกรรม */}
+                        <input
+                            type="text"
+                            placeholder="ชื่อกิจกรรม"
+                            value={eventName}
+                            onChange={(e) => setEventName(e.target.value)}
+                            className="w-full p-2 mb-4 border border-gray-300 rounded"
+                        />
+
+                        {/* อัปโหลดรูปภาพ */}
+                        <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="mb-4 w-full"
+                        />
+
+                        {/* แสดงภาพตัวอย่าง */}
+                        {selectedActivityImages.length > 0 && (
+                            <div className="mt-4 grid grid-cols-3 gap-2">
+                                {selectedActivityImages.map((img, index) => (
+                                    <div key={index} className="relative">
+                                        <img
+                                            src={img.preview}
+                                            alt="Uploaded"
+                                            className="w-full h-24 object-cover rounded cursor-pointer"
+                                            onClick={() => handlePreviewImage(img.preview)}
+                                        />
+                                        <button
+                                            className="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-1 rounded-full"
+                                            onClick={() => handleRemoveImageEvent(index)}
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* ปุ่มยืนยัน */}
+                        <div className="flex justify-end gap-2 mt-4">
+                            <button
+                                onClick={() => setIsSpecialActivityModalOpen(false)}
+                                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md"
+                            >
+                                ยกเลิก
+                            </button>
+                            <button
+                                onClick={handleSubmitSpecialActivity}
+                                className="bg-green-500 text-white px-4 py-2 rounded-md"
+                            >
+                                ยืนยัน
                             </button>
                         </div>
                     </div>

@@ -21,6 +21,8 @@ const historyrewardURL = ( page ,userID )=> `${baseurl}customer/historyrewards/$
 const uploadFaceUrl = `${baseurl}customer/customerinfo/uploadfaceid`
 const register = (eventid) => `${baseurl}events/registerCustomer/${eventid}`;
 const useRewardUrl = `${baseurl}customer/rewards/use`
+const getcloudEvent = ( page , userID )=>`${baseurl}customer/cloud/customer/${userID}?page=${page}&per_page=10`
+const uploadspecialEvent = `${baseurl}customer/uploadEvent/`
 
 function mobileCheck() {
   const userAgent = navigator.userAgent || navigator.vendor || window.opera;
@@ -75,7 +77,6 @@ export const loginWithLine = createAsyncThunk(
     }
   }
 );
-
 
 // export const loginWithLine = createAsyncThunk(
 //   "user/loginWithLine",
@@ -143,6 +144,39 @@ export const upFaceurl = createAsyncThunk(
 
     try {
       const response = await axios.put(url, fileData, {
+        headers: {
+          // ไม่ต้องกำหนด 'Content-Type' เพราะ axios จะตั้งค่าให้เองเมื่อใช้ FormData
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Upload failed:", error.response?.data || error.message);
+
+      if (error.response) {
+        const { status, data } = error.response;
+        if (status >= 400 && status < 500) {
+          return rejectWithValue(data?.message || "Client error occurred");
+        } else if (status >= 500) {
+          return rejectWithValue("Server error occurred. Please try again later.");
+        }
+      }
+
+      return rejectWithValue("Network error occurred. Please check your connection.");
+    }
+  }
+);
+
+export const uploadEventData = createAsyncThunk(
+  "user/uploadEventDatas",
+  async ({ fileData }, { rejectWithValue }) => {
+    const url = uploadspecialEvent;
+
+    if (!(fileData instanceof FormData)) {
+      return rejectWithValue("Invalid file data. Please provide FormData.");
+    }
+
+    try {
+      const response = await axios.post(url, fileData, {
         headers: {
           // ไม่ต้องกำหนด 'Content-Type' เพราะ axios จะตั้งค่าให้เองเมื่อใช้ FormData
         },
@@ -263,6 +297,27 @@ export const gethistoryreward = createAsyncThunk(
   }
 );
 
+export const getCloud = createAsyncThunk(
+  "users/getClouds",
+  async ({ page = 1, userID }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        getcloudEvent(page, userID),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching history:", error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || "Error occurred while fetching events");
+    }
+  }
+);
+
 export const gethistory = createAsyncThunk(
   "users/gethistorys",
   async ({ page = 1, userID }, { rejectWithValue }) => {
@@ -318,6 +373,7 @@ const userSlice = createSlice({
     response: null,
     gethistorysData: { data: [], meta: {} },
     gethistoryrewards: { data: [], meta: {} },
+    getClouds: { data: [], meta: {} },
     getrewardslist: { data: [], meta: {} },
   },
   reducers: {
@@ -380,6 +436,8 @@ const userSlice = createSlice({
             state.gethistorysData = action.payload;
           } else if (action.type.includes("gethistoryrewards")) {
             state.gethistoryrewards = action.payload;
+          } else if (action.type.includes("getClouds")) {
+            state.getClouds = action.payload;
           } else if (action.type.includes("getrewards")) {
             state.getrewardslist = action.payload;
           }

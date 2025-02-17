@@ -78,7 +78,7 @@ export default function Customer() {
         }
 
         const formData = new FormData();
-        formData.append('customer_id', profile.userId);
+        formData.append('customerId', profile.userId);
         formData.append('event_name', eventName);
 
         selectedActivityImages.forEach((img, index) => {

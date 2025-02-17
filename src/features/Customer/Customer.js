@@ -79,7 +79,7 @@ export default function Customer() {
         }
 
         const formData = new FormData();
-        formData.append('customerId', profile.userId);  // แฟ้ม customerId
+        formData.append('customer_id', profile.userId);  // แฟ้ม customerId
         formData.append('event_name', eventName);  // แฟ้ม event_name
 
         // การเพิ่มไฟล์หลายไฟล์ใน images

@@ -79,8 +79,8 @@ export default function Customer() {
         }
 
         const formData = new FormData();
-        formData.append('customer_id', profile.userId);  // แฟ้ม customerId
         formData.append('event_name', eventName);  // แฟ้ม event_name
+        formData.append('customer_id', profile.userId);  // แฟ้ม customerId
 
         // การเพิ่มไฟล์หลายไฟล์ใน images
         selectedActivityImages.forEach((img) => {

@@ -667,7 +667,7 @@ export default function Customer() {
                                                     <td className="border px-4 py-2">{index + 1}</td>
                                                     <td className="border px-4 py-2">{activity.activityName}</td>
                                                     <td className="border px-4 py-2">{customerinfo?.st_tpye}</td>
-                                                    <td className="border px-4 py-2">{activity.created_at ? format(new Date(activity.created_at), "d MMM yyyy hh:mm", { locale: th }) : activity.status}</td>
+                                                    <td className="border px-4 py-2">{activity.created_at ? format(new Date(activity.created_at), "d MMM yyyy HH:mm", { locale: th }) : activity.status}</td>
                                                     <td className="border px-4 py-2">{convertPointsToTime(activity.pointsEarned)}</td>
                                                     <td className="border px-4 py-2">
                                                         <button
@@ -729,7 +729,7 @@ export default function Customer() {
                                                 <tr key={activity.id}>
                                                     <td className="border px-4 py-2">{index + 1}</td>
                                                     <td className="border px-4 py-2">{activity.event_name}</td>
-                                                    <td className="border px-4 py-2">{activity.created_at ? format(new Date(activity.created_at), "d MMM yyyy hh:mm", { locale: th }) : activity.status}</td>
+                                                    <td className="border px-4 py-2">{activity.created_at ? format(new Date(activity.created_at), "d MMM yyyy HH:mm", { locale: th }) : activity.status}</td>
                                                     <td className="border px-4 py-2" onClick={() => handleImageClick(activity.images, 0)}> <div className="w-6 h-6">{image}</div></td>
                                                 </tr>
                                             )) :

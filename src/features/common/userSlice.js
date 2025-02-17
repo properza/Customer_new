@@ -168,15 +168,12 @@ export const upFaceurl = createAsyncThunk(
 
 export const uploadEventData = createAsyncThunk(
   "user/uploadEventDatas",
-  async ({ fileData }, { rejectWithValue }) => {
+  async ({ formData }, { rejectWithValue }) => {
     const url = uploadspecialEvent;
 
-    if (!(fileData instanceof FormData)) {
-      return rejectWithValue("Invalid file data. Please provide FormData.");
-    }
 
     try {
-      const response = await axios.post(url, fileData, {
+      const response = await axios.post(url, formData, {
         headers: {
           // ไม่ต้องกำหนด 'Content-Type' เพราะ axios จะตั้งค่าให้เองเมื่อใช้ FormData
         },

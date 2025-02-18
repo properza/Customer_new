@@ -6,10 +6,10 @@ import liff from "@line/liff";
 const baseurl = 'https://project-dev-0hj6.onrender.com/';
 
 //line liff use
-const lineid = `2002511864-Lw8l8Jo8`;
+//const lineid = `2002511864-Lw8l8Jo8`;
 
 //line liff dev
-//const lineid = `2002511864-bjvMvjkv`;
+const lineid = `2002511864-bjvMvjkv`;
 
 // Endpoint
 const getprofile = `${baseurl}customer/customerinfo`;
@@ -168,7 +168,7 @@ export const upFaceurl = createAsyncThunk(
 
 export const uploadEventData = createAsyncThunk(
   "user/uploadEventDatas",
-  async ({ formData }, { rejectWithValue }) => {
+  async (formData , { rejectWithValue }) => {
     const url = uploadspecialEvent;
 
 

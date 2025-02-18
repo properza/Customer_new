@@ -77,6 +77,7 @@ export default function Customer() {
             });
             return;
         }
+        
 
         const formData = new FormData();
         formData.append('event_name', eventName);  // แฟ้ม event_name
@@ -87,10 +88,7 @@ export default function Customer() {
             formData.append('images', img.file);  // เพิ่มไฟล์ลงไป
         });
 
-        // ตรวจสอบข้อมูลใน FormData
-        for (let [key, value] of formData.entries()) {
-            console.log(`${key}: ${value}`);
-        }
+        console.log(formData)
 
         // ส่งข้อมูลไปยัง backend
         dispatch(uploadEventData(formData))
@@ -561,6 +559,17 @@ export default function Customer() {
             <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
         </svg>;
 
+    const iconleft = 
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        </svg>
+    ;
+    const iconright = 
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        </svg>
+    ;
+
 
     return (
         <>
@@ -941,22 +950,22 @@ export default function Customer() {
                             <img
                                 src={selectedImage[selectedImageIndex]}
                                 alt="Modal Image"
-                                className="max-w-full max-h-full"
+                                className="max-w-full max-h-full mb-4"
                             />
                         )}
 
                         <button
                             onClick={handlePrevImage}
-                            className="absolute left-2 top-1/2 transform -translate-y-1/2 text-white text-2xl"
+                            className="absolute left-0 bottom-[-1rem] transform -translate-y-1/2 w-8 h-8 text-black text-2xl"
                         >
-                            &#8592; {/* ลูกศรซ้าย */}
+                            {iconleft}
                         </button>
 
                         <button
                             onClick={handleNextImage}
-                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white text-2xl"
+                            className="absolute right-0 bottom-[-1rem] transform -translate-y-1/2 w-8 h-8 text-black text-2xl"
                         >
-                            &#8594; {/* ลูกศรขวา */}
+                            {iconright}
                         </button>
                     </div>
                 </Modal>

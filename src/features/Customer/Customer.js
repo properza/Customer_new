@@ -17,6 +17,7 @@ import { th } from 'date-fns/locale';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { loadModels } from './Modal/utils/faceApi';
 import { QRCodeCanvas } from 'qrcode.react';
+import BWIPJS from 'bwip-js'; 
 
 export default function Customer() {
     const { profile, customerinfo, isLoading, error } = useSelector((state) => state.user);

@@ -838,22 +838,22 @@ export default function Customer() {
                 {activebtn === 'historytrading' &&
                     <TitleCard title={'ประวัติการแลก'} title2={`ทั้งหมด ${historyreward.meta?.total} รายการ`} topMargin={'mt-1'}>
                         <div className="overflow-auto h-[45vh]">
-                            {historyreward.data && historyreward.data.length > 0 ? (<div className='grid grid-cols-2 gap-5'>
+                            {historyreward.data && historyreward.data.length > 0 ? (<div className='grid grid-cols-2 gap-2'>
                                 {historyreward.data.map((reward, index) => (
                                     <div key={reward.id} className='flex justify-between border shadow-lg rounded-md p-2 '>
                                         <img src={reward.reward_url} alt="" className='w-20 h-20 mb-2 mx-auto' />
-                                        <div className="">
-                                            <div className="my-1">
+                                        <div className="mt-auto">
+                                            <div className="">
                                                 <p>{reward.reward_name}</p>
-                                                <p>{reward.status}</p>
+                                                {/* <p>{reward.status}</p> */}
                                             </div>
                                             {reward.status === 'pending' ?
                                             <button onClick={() => handleuseReward(reward)} className="bg-blue-500 text-white px-3 py-1 mt-2 rounded-md w-full hover:bg-blue-400">
                                                 ใช้รางวัล
                                             </button> 
                                             :reward.status === 'used' ?
-                                            <p>{reward.id}</p>
-                                            :reward.status === 'completed'?<p>แลกแล้ว</p> :
+                                            <p className='bg-green-400 text-white px-3 py-1 mt-2 rounded-md w-full'>{reward.id}</p>
+                                            :reward.status === 'completed'?<p className='bg-green-400 text-white px-3 py-1 mt-2 rounded-md w-full'>แลกแล้ว</p> :
                                             <p>หมดเวลาแลกของรางวัล</p>
                                             }
                                         </div>

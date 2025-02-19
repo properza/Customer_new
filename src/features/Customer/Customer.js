@@ -16,7 +16,7 @@ import { format } from 'date-fns';
 import { th } from 'date-fns/locale';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { loadModels } from './Modal/utils/faceApi';
-import JsBarcode from 'jsbarcode';
+import Barcode from 'react-barcode';
 
 export default function Customer() {
     const { profile, customerinfo, isLoading, error } = useSelector((state) => state.user);
@@ -39,13 +39,19 @@ export default function Customer() {
     const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
     const [isFaceScanModalOpen, setIsFaceScanModalOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
-    const [isQRCodeModalOpen, setIsQRCodeModalOpen] = useState(false);
     const [selectedImages, setSelectedImages] = useState([]);
 
     const [isSpecialActivityModalOpen, setIsSpecialActivityModalOpen] = useState(false);
     const [eventName, setEventName] = useState('');
     const [selectedActivityImages, setSelectedActivityImages] = useState([]);
-    const barcodeRef = useRef(null);
+
+    const [selectedRewardId, setSelectedRewardId] = useState(null);
+    const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false);
+
+    const handleBarcodeClick = (rewardId) => {
+        setSelectedRewardId(rewardId);
+        setIsBarcodeModalOpen(true);
+    };
 
     const handleImageChange = (event) => {
         const files = Array.from(event.target.files);
@@ -537,23 +543,6 @@ export default function Customer() {
         const minutes = totalMinutes % 60;  // Calculate remaining minutes
         return `${hours} ชม ${minutes} นาที`;
     };
-
-    const [selectedRewardId, setSelectedRewardId] = useState(null);
-
-    const handleBarcodeClick = (rewardId) => {
-        setSelectedRewardId(rewardId);
-        setIsQRCodeModalOpen(true);
-    };
-
-    useEffect(() => {
-        if (barcodeRef.current) {
-            JsBarcode(barcodeRef.current, selectedRewardId, {
-                format: 'CODE128',  // เปลี่ยนเป็นประเภทบาร์โค้ดที่ต้องการ
-                displayValue: true,  // แสดงข้อความ
-                fontSize: 18,
-            });
-        }
-    }, [value]);
 
     const icons = (
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="green" className="bi bi-coin" viewBox="0 0 16 16">
@@ -1064,11 +1053,11 @@ export default function Customer() {
                     </div>
                 </Modal>
 
-                <Modal isOpen={isQRCodeModalOpen}>
-                    <div className="qr-code-modal">
+                <Modal isOpen={isBarcodeModalOpen} onClose={() => setIsBarcodeModalOpen(false)}>
+                    <div className="grid justify-center items-center gap-1">
                         <h3>รหัสของรางวัล : {selectedRewardId}</h3>
-                        <svg ref={barcodeRef}></svg>
-                        <button onClick={() => setIsQRCodeModalOpen(false)} className="close-btn">Close</button>
+                        <Barcode value={selectedRewardId}/>
+                        {/* <button onClick={() => setIsBarcodeModalOpen(false)} className="close-btn">Close</button> */}
                     </div>
                 </Modal>
 

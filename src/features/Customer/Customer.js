@@ -841,7 +841,7 @@ export default function Customer() {
                             {historyreward.data && historyreward.data.length > 0 ? (<div className='grid grid-cols-2 gap-5'>
                                 {historyreward.data.map((reward, index) => (
                                     <div key={reward.id} className='flex justify-between border shadow-lg rounded-md p-2 '>
-                                        <img src={reward.reward_Url} alt="" className='w-35 h-35 mb-2 mx-auto' />
+                                        <img src={reward.reward_url} alt="" className='w-20 h-20 mb-2 mx-auto' />
                                         <div className="">
                                             <div className="my-1">
                                                 <p>{reward.reward_name}</p>

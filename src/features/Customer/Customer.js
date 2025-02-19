@@ -1,5 +1,5 @@
 // src/features/common/Customer.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ReactPaginate from 'react-paginate';
 import Top from './Top';
@@ -45,6 +45,8 @@ export default function Customer() {
     const [isSpecialActivityModalOpen, setIsSpecialActivityModalOpen] = useState(false);
     const [eventName, setEventName] = useState('');
     const [selectedActivityImages, setSelectedActivityImages] = useState([]);
+
+    const canvasRef = useRef(null);
 
     const handleImageChange = (event) => {
         const files = Array.from(event.target.files);
@@ -543,6 +545,23 @@ export default function Customer() {
         setSelectedRewardId(rewardId);
         setIsQRCodeModalOpen(true);
     };
+
+    useEffect(() => {
+        if (selectedRewardId && canvasRef.current) {
+            try {
+                BWIPJS.toCanvas(canvasRef.current, {
+                    bcid: 'qrcode',  // QR Code
+                    text: selectedRewardId, // The text to encode
+                    scale: 3,  // Adjust scale for size
+                    height: 10,  // Adjust height
+                    includetext: true, // Optionally include text
+                    textxalign: 'center', // Align the text at the center
+                });
+            } catch (e) {
+                console.error('Error generating QR code:', e);
+            }
+        }
+    }, [selectedRewardId]);
 
     const icons = (
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="green" className="bi bi-coin" viewBox="0 0 16 16">
@@ -1053,14 +1072,13 @@ export default function Customer() {
                     </div>
                 </Modal>
 
-                    <Modal isOpen={isQRCodeModalOpen} >
-                        <div className="qr-code-modal">
-                            <h3>รหัสของรางวัล : {selectedRewardId}</h3>
-                            <QRCodeCanvas value={selectedRewardId} size={256} level="H" includeMargin={true} />
-
-                            <button onClick={() => setIsQRCodeModalOpen(false)} className="close-btn">Close</button>
-                        </div>
-                    </Modal>
+                <Modal isOpen={isQRCodeModalOpen}>
+                    <div className="qr-code-modal">
+                        <h3>รหัสของรางวัล : {selectedRewardId}</h3>
+                        <canvas ref={canvasRef} /> {/* Use the canvas reference for BWIPJS */}
+                        <button onClick={() => setIsQRCodeModalOpen(false)} className="close-btn">Close</button>
+                    </div>
+                </Modal>
 
                 {/* Loading Modal */}
                 <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>

@@ -847,9 +847,15 @@ export default function Customer() {
                                                 <p>{reward.reward_name}</p>
                                                 <p>{reward.status}</p>
                                             </div>
+                                            {reward.status === 'pending' ?
                                             <button onClick={() => handleuseReward(reward)} className="bg-blue-500 text-white px-3 py-1 mt-2 rounded-md w-full hover:bg-blue-400">
                                                 ใช้รางวัล
-                                            </button>
+                                            </button> 
+                                            :reward.status === 'used' ?
+                                            <p>{reward.id}</p>
+                                            :reward.status === 'completed'?<p>แลกแล้ว</p> :
+                                            <p>หมดเวลาแลกของรางวัล</p>
+                                            }
                                         </div>
 
                                     </div>

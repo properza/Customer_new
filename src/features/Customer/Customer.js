@@ -550,14 +550,18 @@ export default function Customer() {
     useEffect(() => {
         if (selectedRewardId && canvasRef.current) {
             try {
+                console.log('Generating QR code for: ', selectedRewardId); // Check if selectedRewardId is valid
+    
                 BWIPJS.toCanvas(canvasRef.current, {
-                    bcid: 'qrcode',  // QR Code
-                    text: selectedRewardId, // The text to encode
-                    scale: 3,  // Adjust scale for size
-                    height: 10,  // Adjust height
-                    includetext: true, // Optionally include text
-                    textxalign: 'center', // Align the text at the center
+                    bcid: 'qrcode',  // QR code type
+                    text: selectedRewardId, // The text to encode in the QR code
+                    scale: 3,  // Adjust scale for the size of the QR code
+                    height: 10,  // Adjust height of the QR code
+                    includetext: true,  // Optionally include text below the QR code
+                    textxalign: 'center', // Align the text in the center
                 });
+    
+                console.log('QR code generated successfully');
             } catch (e) {
                 console.error('Error generating QR code:', e);
             }
@@ -1076,7 +1080,7 @@ export default function Customer() {
                 <Modal isOpen={isQRCodeModalOpen}>
                     <div className="qr-code-modal">
                         <h3>รหัสของรางวัล : {selectedRewardId}</h3>
-                        <canvas ref={canvasRef} /> {/* Use the canvas reference for BWIPJS */}
+                        <canvas ref={canvasRef} width={256} height={256} /> {/* Use the canvas reference for BWIPJS */}
                         <button onClick={() => setIsQRCodeModalOpen(false)} className="close-btn">Close</button>
                     </div>
                 </Modal>

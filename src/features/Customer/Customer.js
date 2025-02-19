@@ -17,7 +17,7 @@ import { th } from 'date-fns/locale';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { loadModels } from './Modal/utils/faceApi';
 import { QRCodeCanvas } from 'qrcode.react';
-import BWIPJS from 'bwip-js'; 
+import BWIPJS from 'bwip-js';
 
 export default function Customer() {
     const { profile, customerinfo, isLoading, error } = useSelector((state) => state.user);
@@ -550,20 +550,20 @@ export default function Customer() {
     useEffect(() => {
         if (selectedRewardId && canvasRef.current) {
             try {
-                console.log('Generating QR code for: ', selectedRewardId); // Check if selectedRewardId is valid
-    
+                console.log("Generating QR code for:", selectedRewardId); // ลองตรวจสอบข้อมูลที่ใช้ในการสร้าง QR Code
+
                 BWIPJS.toCanvas(canvasRef.current, {
-                    bcid: 'qrcode',  // QR code type
-                    text: selectedRewardId, // The text to encode in the QR code
-                    scale: 3,  // Adjust scale for the size of the QR code
-                    height: 10,  // Adjust height of the QR code
-                    includetext: true,  // Optionally include text below the QR code
-                    textxalign: 'center', // Align the text in the center
+                    bcid: 'qrcode',  // QR code
+                    text: selectedRewardId, // ใช้ค่า selectedRewardId
+                    scale: 3,  // ขนาด QR code
+                    height: 10,  // ความสูงของ QR code
+                    includetext: true,  // รวมข้อความ
+                    textxalign: 'center',  // จัดตำแหน่งข้อความตรงกลาง
                 });
-    
-                console.log('QR code generated successfully');
+
+                console.log("QR code generated successfully.");
             } catch (e) {
-                console.error('Error generating QR code:', e);
+                console.error("Error generating QR code:", e);
             }
         }
     }, [selectedRewardId]);
@@ -1080,7 +1080,11 @@ export default function Customer() {
                 <Modal isOpen={isQRCodeModalOpen}>
                     <div className="qr-code-modal">
                         <h3>รหัสของรางวัล : {selectedRewardId}</h3>
-                        <canvas ref={canvasRef} width={256} height={256} /> {/* Use the canvas reference for BWIPJS */}
+                        {selectedRewardId ? (
+                            <canvas ref={canvasRef} width={256} height={256} />
+                        ) : (
+                            <p>กำลังสร้าง QR Code...</p> // แสดงข้อความกรณีที่ไม่สามารถสร้าง QR Code ได้
+                        )}
                         <button onClick={() => setIsQRCodeModalOpen(false)} className="close-btn">Close</button>
                     </div>
                 </Modal>

@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { th } from 'date-fns/locale';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { loadModels } from './Modal/utils/faceApi';
+import { QRCodeCanvas } from 'qrcode.react';
 
 export default function Customer() {
     const { profile, customerinfo, isLoading, error } = useSelector((state) => state.user);
@@ -38,6 +39,7 @@ export default function Customer() {
     const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
     const [isFaceScanModalOpen, setIsFaceScanModalOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [isQRCodeModalOpen, setIsQRCodeModalOpen] = useState(false);
     const [selectedImages, setSelectedImages] = useState([]);
 
     const [isSpecialActivityModalOpen, setIsSpecialActivityModalOpen] = useState(false);
@@ -77,7 +79,7 @@ export default function Customer() {
             });
             return;
         }
-        
+
 
         const formData = new FormData();
         formData.append('event_name', eventName);  // แฟ้ม event_name
@@ -535,6 +537,13 @@ export default function Customer() {
         return `${hours} ชม ${minutes} นาที`;
     };
 
+    const [selectedRewardId, setSelectedRewardId] = useState(null);
+
+    const handleBarcodeClick = (rewardId) => {
+        setSelectedRewardId(rewardId);
+        setIsQRCodeModalOpen(true);
+    };
+
     const icons = (
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="green" className="bi bi-coin" viewBox="0 0 16 16">
             <path d="M5.5 9.511c.076.954.83 1.697 2.182 1.785V12h.6v-.709c1.4-.098 2.218-.846 2.218-1.932 0-.987-.626-1.496-1.745-1.76l-.473-.112V5.57c.6.068.982.396 1.074.85h1.052c-.076-.919-.864-1.638-2.126-1.716V4h-.6v.719c-1.195.117-2.01.836-2.01 1.853 0 .9.606 1.472 1.613 1.707l.397.098v2.034c-.615-.093-1.022-.43-1.114-.9zm2.177-2.166c-.59-.137-.91-.416-.91-.836 0-.47.345-.822.915-.925v1.76h-.005zm.692 1.193c.717.166 1.048.435 1.048.91 0 .542-.412.914-1.135.982V8.518z" />
@@ -559,16 +568,20 @@ export default function Customer() {
             <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
         </svg>;
 
-    const iconleft = 
+    const iconleft =
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
         </svg>
-    ;
-    const iconright = 
+        ;
+    const iconright =
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
         </svg>
-    ;
+        ;
+    const BarCode = <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z" />
+    </svg>;
 
 
     return (
@@ -838,26 +851,27 @@ export default function Customer() {
                 {activebtn === 'historytrading' &&
                     <TitleCard title={'ประวัติการแลก'} title2={`ทั้งหมด ${historyreward.meta?.total} รายการ`} topMargin={'mt-1'}>
                         <div className="overflow-auto h-[45vh]">
-                            {historyreward.data && historyreward.data.length > 0 ? (<div className='grid grid-cols-2 gap-2'>
+                            {historyreward.data && historyreward.data.length > 0 ? (<div className='grid grid-cols-1 gap-2'>
                                 {historyreward.data.map((reward, index) => (
-                                    <div key={reward.id} className='flex justify-between border shadow-lg rounded-md p-2 '>
-                                        <img src={reward.reward_url} alt="" className='w-20 h-20 mb-2 mx-auto' />
-                                        <div className="mt-auto">
-                                            <div className="">
+                                    <div key={reward.id} className='flex  border shadow-lg rounded-md p-2 '>
+                                        <div className="flex gap-2 w-full pr-1">
+                                            <img src={reward.reward_url} alt="" className='w-20 h-20 mb-2 pr-2 border-r-gray-500 border-r' />
+                                            <div className="grid gap-1">
                                                 <p>{reward.reward_name}</p>
-                                                {/* <p>{reward.status}</p> */}
+                                                <p>{reward.created_at === reward.updated_at ? format(new Date(reward.created_at), "แลกในวันที่ d MMM yyyy HH:mm", { locale: th }) : format(new Date(reward.updated_at), "ใช้ในวันที่ d MMM yyyy HH:mm", { locale: th })}</p>
                                             </div>
+                                        </div>
+                                        <div className="w-[150px] flex justify-center items-center text-center border-l-gray-500 border-l p-2">
                                             {reward.status === 'pending' ?
-                                            <button onClick={() => handleuseReward(reward)} className="bg-blue-500 text-white px-3 py-1 mt-2 rounded-md w-full hover:bg-blue-400">
-                                                ใช้รางวัล
-                                            </button> 
-                                            :reward.status === 'used' ?
-                                            <p className='bg-green-400 text-white px-3 py-1 mt-2 rounded-md w-full'>{reward.id}</p>
-                                            :reward.status === 'completed'?<p className='bg-green-400 text-white px-3 py-1 mt-2 rounded-md w-full'>แลกแล้ว</p> :
-                                            <p>หมดเวลาแลกของรางวัล</p>
+                                                <button onClick={() => handleuseReward(reward)} className="bg-orange-400 text-white px-3 py-1 mt-2 rounded-md w-full hover:bg-orange-300">
+                                                    ใช้รางวัล
+                                                </button>
+                                                : reward.status === 'used' ?
+                                                    <p className='bg-green-400 text-white px-3 py-1 mt-2 rounded-md w-full text-center flex justify-center cursor-pointer' onClick={() => handleBarcodeClick(reward.id)}> <p className='w-8 h-8'>{BarCode}</p></p>
+                                                    : reward.status === 'completed' ? <p className='bg-gray-400 text-white px-3 py-1 mt-2 rounded-md w-full'>แลกแล้ว</p> :
+                                                        <p>หมดเวลาแลกของรางวัล</p>
                                             }
                                         </div>
-
                                     </div>
                                 ))}
                             </div>) : (
@@ -1038,6 +1052,15 @@ export default function Customer() {
                         </div>
                     </div>
                 </Modal>
+
+                    <Modal isOpen={isQRCodeModalOpen} onClose={() => setIsQRCodeModalOpen(false)}>
+                        <div className="qr-code-modal">
+                            <h3>รหัสของรางวัล : {selectedRewardId}</h3>
+                            <QRCodeCanvas value={selectedRewardId} size={256} level="H" includeMargin={true} />
+
+                            <button onClick={onClose} className="close-btn">Close</button>
+                        </div>
+                    </Modal>
 
                 {/* Loading Modal */}
                 <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>

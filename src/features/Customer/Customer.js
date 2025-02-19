@@ -16,7 +16,7 @@ import { format } from 'date-fns';
 import { th } from 'date-fns/locale';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { loadModels } from './Modal/utils/faceApi';
-import { QRCodeCanvas } from 'qrcode.react';
+import { QRCode } from 'qrcode.react';
 import BWIPJS from 'bwip-js';
 
 export default function Customer() {
@@ -566,7 +566,7 @@ export default function Customer() {
             }
         }
     }, [selectedRewardId]);
-    
+
 
     const icons = (
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="green" className="bi bi-coin" viewBox="0 0 16 16">
@@ -1080,11 +1080,13 @@ export default function Customer() {
                 <Modal isOpen={isQRCodeModalOpen}>
                     <div className="qr-code-modal">
                         <h3>รหัสของรางวัล : {selectedRewardId}</h3>
-                        {selectedRewardId ? (
-                            <canvas ref={canvasRef} width={256} height={256} />
-                        ) : (
-                            <p>กำลังสร้าง QR Code...</p> // แสดงข้อความกรณีที่ไม่สามารถสร้าง QR Code ได้
-                        )}
+                        <QRCode
+                            value={selectedRewardId} // ข้อความที่ต้องการสร้าง QR Code
+                            size={300}  // ขนาดของ QR Code
+                            level="H"   // ระดับการรองรับการแก้ไขข้อผิดพลาด (H = High)
+                            includeMargin={true}  // รวมขอบ
+                            renderAs="svg" // แสดง QR Code ในรูปแบบ SVG
+                        />
                         <button onClick={() => setIsQRCodeModalOpen(false)} className="close-btn">Close</button>
                     </div>
                 </Modal>

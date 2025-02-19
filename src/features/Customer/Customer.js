@@ -1053,12 +1053,12 @@ export default function Customer() {
                     </div>
                 </Modal>
 
-                    <Modal isOpen={isQRCodeModalOpen} onClose={() => setIsQRCodeModalOpen(false)}>
+                    <Modal isOpen={isQRCodeModalOpen} >
                         <div className="qr-code-modal">
                             <h3>รหัสของรางวัล : {selectedRewardId}</h3>
                             <QRCodeCanvas value={selectedRewardId} size={256} level="H" includeMargin={true} />
 
-                            <button onClick={onClose} className="close-btn">Close</button>
+                            <button onClick={() => setIsQRCodeModalOpen(false)} className="close-btn">Close</button>
                         </div>
                     </Modal>
 

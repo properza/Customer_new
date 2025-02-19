@@ -550,23 +550,23 @@ export default function Customer() {
     useEffect(() => {
         if (selectedRewardId && canvasRef.current) {
             try {
-                console.log("Generating QR code for:", selectedRewardId); // ลองตรวจสอบข้อมูลที่ใช้ในการสร้าง QR Code
-
                 BWIPJS.toCanvas(canvasRef.current, {
-                    bcid: 'qrcode',  // QR code
-                    text: selectedRewardId, // ใช้ค่า selectedRewardId
-                    scale: 3,  // ขนาด QR code
-                    height: 10,  // ความสูงของ QR code
-                    includetext: true,  // รวมข้อความ
-                    textxalign: 'center',  // จัดตำแหน่งข้อความตรงกลาง
+                    bcid: 'qrcode',  // เลือกเป็น QR Code
+                    text: selectedRewardId,  // ข้อความที่ต้องการสร้าง QR code
+                    scale: 3,  // ขนาดของ QR Code
+                    height: 10,  // ความสูงของ QR Code
+                    width: 30,  // ปรับความกว้างให้เหมาะสม
+                    includetext: true,  // เพิ่มข้อความ
+                    textxalign: 'center',  // ข้อความตรงกลาง
+                    textsize: 10,  // ขนาดข้อความ
+                    textfont: 'monospace',  // ฟอนต์ของข้อความ
                 });
-
-                console.log("QR code generated successfully.");
             } catch (e) {
                 console.error("Error generating QR code:", e);
             }
         }
     }, [selectedRewardId]);
+    
 
     const icons = (
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="green" className="bi bi-coin" viewBox="0 0 16 16">

@@ -16,8 +16,7 @@ import { format } from 'date-fns';
 import { th } from 'date-fns/locale';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { loadModels } from './Modal/utils/faceApi';
-import { QRCode } from 'qrcode.react';
-import BWIPJS from 'bwip-js';
+import JsBarcode from 'jsbarcode';
 
 export default function Customer() {
     const { profile, customerinfo, isLoading, error } = useSelector((state) => state.user);
@@ -46,8 +45,7 @@ export default function Customer() {
     const [isSpecialActivityModalOpen, setIsSpecialActivityModalOpen] = useState(false);
     const [eventName, setEventName] = useState('');
     const [selectedActivityImages, setSelectedActivityImages] = useState([]);
-
-    const canvasRef = useRef(null);
+    const barcodeRef = useRef(null);
 
     const handleImageChange = (event) => {
         const files = Array.from(event.target.files);
@@ -548,25 +546,14 @@ export default function Customer() {
     };
 
     useEffect(() => {
-        if (selectedRewardId && canvasRef.current) {
-            try {
-                BWIPJS.toCanvas(canvasRef.current, {
-                    bcid: 'qrcode',  // เลือกเป็น QR Code
-                    text: selectedRewardId,  // ข้อความที่ต้องการสร้าง QR code
-                    scale: 3,  // ขนาดของ QR Code
-                    height: 10,  // ความสูงของ QR Code
-                    width: 30,  // ปรับความกว้างให้เหมาะสม
-                    includetext: true,  // เพิ่มข้อความ
-                    textxalign: 'center',  // ข้อความตรงกลาง
-                    textsize: 10,  // ขนาดข้อความ
-                    textfont: 'monospace',  // ฟอนต์ของข้อความ
-                });
-            } catch (e) {
-                console.error("Error generating QR code:", e);
-            }
+        if (barcodeRef.current) {
+            JsBarcode(barcodeRef.current, selectedRewardId, {
+                format: 'CODE128',  // เปลี่ยนเป็นประเภทบาร์โค้ดที่ต้องการ
+                displayValue: true,  // แสดงข้อความ
+                fontSize: 18,
+            });
         }
-    }, [selectedRewardId]);
-
+    }, [value]);
 
     const icons = (
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="green" className="bi bi-coin" viewBox="0 0 16 16">
@@ -1080,13 +1067,7 @@ export default function Customer() {
                 <Modal isOpen={isQRCodeModalOpen}>
                     <div className="qr-code-modal">
                         <h3>รหัสของรางวัล : {selectedRewardId}</h3>
-                        <QRCode
-                            value={selectedRewardId} // ข้อความที่ต้องการสร้าง QR Code
-                            size={300}  // ขนาดของ QR Code
-                            level="H"   // ระดับการรองรับการแก้ไขข้อผิดพลาด (H = High)
-                            includeMargin={true}  // รวมขอบ
-                            renderAs="svg" // แสดง QR Code ในรูปแบบ SVG
-                        />
+                        <svg ref={barcodeRef}></svg>
                         <button onClick={() => setIsQRCodeModalOpen(false)} className="close-btn">Close</button>
                     </div>
                 </Modal>

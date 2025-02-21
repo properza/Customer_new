@@ -84,6 +84,37 @@ export const loginWithLine = createAsyncThunk(
   }
 );
 
+export const getuser = createAsyncThunk(
+  'user/getuserData',
+  async ({ profile, retryCount = 0 }, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await axios.post(getprofile,
+        {
+          name: profile.displayName,
+          customer_id: profile.userId,
+          picture: profile.pictureUrl,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      return response.data;
+
+    } catch (error) {
+      if (retryCount < 3 && error.response && error.response.status === 500) {
+        // ถ้า error เป็น Internal Server Error, และ retry ยังไม่เกิน 3 ครั้ง, เรียก getuser ใหม่
+        console.log(`Retrying getuser request, attempt ${retryCount + 1}`);
+        return dispatch(getuser({ profile, retryCount: retryCount + 1 })); // Retry
+      }
+
+      return rejectWithValue(error.response ? error.response.data : error.message);
+    }
+  }
+);
+
 // export const loginWithLine = createAsyncThunk(
 //   "user/loginWithLine",
 //   async (_, { rejectWithValue, dispatch }) => {
@@ -264,28 +295,7 @@ export const usedRewards = createAsyncThunk(
   }
 );
 
-export const getuser = createAsyncThunk(
-  'user/getuserData',
-  async ({ profile }, { rejectWithValue }) => {
-    try {
-      const response = await axios.post(getprofile,
-        {
-          name: profile.displayName,
-          customer_id: profile.userId,
-          picture: profile.pictureUrl,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response ? error.response.data : error.message);
-    }
-  }
-);
+
 
 export const signin = createAsyncThunk(
   'user/signins',

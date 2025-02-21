@@ -56,15 +56,8 @@ export default function Customer() {
 
     const [selectedRewardId, setSelectedRewardId] = useState(null);
     const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false);
-    const [selectedScoresId, setselectedScoresId] = useState(0);
-    const handleBarcodeClick = (rewardId) => {
-        setSelectedRewardId(rewardId);
-        setIsBarcodeModalOpen(true);
-    };
 
-    useEffect(() => {
-        dispatch(getscroesData())
-    }, [dispatch])
+    
 
     const handleImageChange = (event) => {
         const files = Array.from(event.target.files);
@@ -246,10 +239,18 @@ export default function Customer() {
     const handleCloseFaceScanModal = () => {
         setIsFaceScanModalOpen(false);
         setModalRegister(false);
-        // setReferral(null);
-        // navigate(location.pathname, { replace: true });
-        // window.location.reload();
     };
+    
+    const [selectedScoresId, setselectedScoresId] = useState(0);
+
+    const handleBarcodeClick = (rewardId) => {
+        setSelectedRewardId(rewardId);
+        setIsBarcodeModalOpen(true);
+    };
+
+    useEffect(() => {
+        dispatch(getscroesData())
+    }, [dispatch])
 
     const handleRedeemClick = (reward) => {
         Swal.fire({

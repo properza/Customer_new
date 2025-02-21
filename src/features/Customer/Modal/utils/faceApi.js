@@ -7,6 +7,7 @@ export async function loadModels() {
         if (!faceapi.nets.tinyFaceDetector || !faceapi.nets.faceLandmark68Net || !faceapi.nets.faceRecognitionNet) {
             throw new Error("One of the models is not defined properly in face-api.js.");
         }
+        await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
         await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
         await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
         await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);

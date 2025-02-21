@@ -57,7 +57,13 @@ export default function Customer() {
     const [selectedRewardId, setSelectedRewardId] = useState(null);
     const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false);
 
-    
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const referralCode = params.get('referral');
+        if (referralCode) {
+            setReferral(referralCode);
+        }
+    }, [location.search]);
 
     const handleImageChange = (event) => {
         const files = Array.from(event.target.files);
@@ -178,21 +184,11 @@ export default function Customer() {
         setSelectedImageIndex((prevIndex) => (prevIndex - 1 + selectedImage.length) % selectedImage.length);
     };
 
-
-
-    console.log('ข้อมูล', scroesData)
-
     useEffect(() => {
         loadModels().then(() => console.log("Models loaded"));
     }, []);
 
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        const referralCode = params.get('referral'); // ดึงค่า referral
-        if (referralCode) {
-            setReferral(referralCode);
-        }
-    }, [location.search]);
+    
 
     useEffect(() => {
         dispatch(loginWithLine());

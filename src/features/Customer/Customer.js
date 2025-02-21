@@ -1091,7 +1091,7 @@ export default function Customer() {
 
                 <Modal isOpen={isSpecialActivityModalOpen} onClose={() => setIsSpecialActivityModalOpen(false)}>
                     <div className="p-4">
-                        <h2 className="text-lg font-bold mb-4">กิจกรรมพิเศษ</h2>
+                        <h2 className="text-lg font-bold mb-4"> {customerinfo?.st_tpye === "กยศ." ?'กิจกรรมจิตอาสา':'กิจกรรมพิเศษ'}</h2>
 
                         {/* ฟอร์มกรอกชื่อกิจกรรม */}
                         <input
@@ -1101,9 +1101,9 @@ export default function Customer() {
                             onChange={(e) => setEventName(e.target.value)}
                             className="w-full p-2 mb-4 border border-gray-300 rounded"
                         />
-
+                        {customerinfo?.st_tpye === "กยศ." &&
                         <div className='mb-4'>
-                            <label htmlFor="scoreSelect">เลือกกิจกรรม:</label>
+                            <label htmlFor="scoreSelect">เลือกประเภท:</label>
                             <select
                                 id="scoreSelect"
                                 value={selectedScoresId}
@@ -1117,7 +1117,7 @@ export default function Customer() {
                                     </option>
                                 ))}
                             </select>
-                        </div>
+                        </div>}
 
                         {/* อัปโหลดรูปภาพ */}
                         <input
@@ -1199,7 +1199,7 @@ export default function Customer() {
                         <ModalFaceScan
                             isOpen={isFaceScanModalOpen}
                             onClose={handleCloseFaceScanModal}
-                            faceUrl={customerinfo?.faceUrl}
+                            faceUrl={customerinfo?.faceUrl[0]}
                             onSuccess={handleFaceScanSuccess}
                         />
                     }

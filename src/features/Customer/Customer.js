@@ -111,7 +111,7 @@ export default function Customer() {
             formData.append('images', img.file);  // เพิ่มไฟล์ลงไป
         });
 
-        console.log(formData)
+        // console.log(formData)
 
         // ตรวจสอบว่าเป็น "กยศ." หรือไม่
         if (customerinfo?.st_tpye === "กยศ.") {
@@ -205,8 +205,8 @@ export default function Customer() {
         }
     }, [dispatch, profile, currentPage]);
 
-    console.log(historyData);
-    console.log(getreward);
+    // console.log(historyData);
+    // console.log(getreward);
 
     useEffect(() => {
         if (customerinfo) {
@@ -411,7 +411,7 @@ export default function Customer() {
                 submitFormData(formData);
             },
             (error) => {
-                console.error("Error getting GPS location: ", error);
+                // console.error("Error getting GPS location: ", error);
                 Swal.fire({
                     icon: "error",
                     title: "ไม่สามารถดึงพิกัด GPS ได้",
@@ -445,7 +445,7 @@ export default function Customer() {
                 handleDeclineReferral();
             });
         } catch (error) {
-            console.error("Error uploading face image: ", error);
+            // console.error("Error uploading face image: ", error);
             // handleDeclineReferral();
             Swal.fire({
                 icon: 'error',
@@ -485,7 +485,7 @@ export default function Customer() {
         dispatch(upFaceurl({ fileData: formData }))
             .unwrap()
             .then((res) => {
-                console.log("Upload success:", res);
+                // console.log("Upload success:", res);
                 Swal.fire({
                     icon: 'success',
                     title: 'อัปโหลดรูปหน้าเรียบร้อย',
@@ -504,7 +504,7 @@ export default function Customer() {
                 }
             })
             .catch((err) => {
-                console.error("Upload error:", err);
+                // console.error("Upload error:", err);
                 Swal.fire({
                     icon: 'error',
                     title: 'อัปโหลดไม่สำเร็จ',
@@ -542,7 +542,7 @@ export default function Customer() {
                 dispatch(resetState());
             })
             .catch((error) => {
-                console.error("Error creating event: ", error);
+                // console.error("Error creating event: ", error);
                 Swal.fire({
                     icon: 'error',
                     title: 'ลงทะเบียนไม่สำเร็จ',
@@ -566,7 +566,7 @@ export default function Customer() {
     // Handle errors or loading states as needed
     useEffect(() => {
         if (error) {
-            console.error("Error:", error);
+            // console.error("Error:", error);
             Swal.fire({
                 icon: 'error',
                 title: 'ข้อผิดพลาด',

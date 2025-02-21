@@ -2,9 +2,6 @@
 
 import * as faceapi from 'face-api.js';
 
-/**
- * โหลดโมเดลที่จำเป็นสำหรับ face-api.js
- */
 export async function loadModels() {
     const MODEL_URL = process.env.PUBLIC_URL + '/models'; // ตรวจสอบให้แน่ใจว่าเส้นทางถูกต้อง
     try {

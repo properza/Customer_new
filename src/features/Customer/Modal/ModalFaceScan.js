@@ -24,10 +24,10 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     useEffect(() => {
         async function loadModels() {
             try {
-                const MODEL_URL = '/models'; // URL สำหรับโหลดโมเดล face-api.js
+                const MODEL_URL = '/models';
                 console.log("Loading face-api models from:", MODEL_URL);
-                await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL); // ใช้โมเดล DNN สำหรับความแม่นยำสูง
-                // await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+    
+                await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
                 setIsModelsLoaded(true);
@@ -42,31 +42,13 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 handleCloseModal();
             }
         }
-
-        if (isOpen) {
-            // ทดสอบการเข้าถึงกล้อง
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(stream => {
-                    console.log('กล้องทำงาน');
-                })
-                .catch(error => {
-                    console.error('ไม่สามารถเข้าถึงกล้องได้:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'ไม่สามารถเข้าถึงกล้อง',
-                        text: 'กรุณาตรวจสอบการอนุญาตการเข้าถึงกล้อง',
-                    });
-                });
     
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                setIsBrowserSupported(false);
-            } else {
-                setIsBrowserSupported(true);
-                loadModels();
-            }
+        // Load models when modal is opened
+        if (isOpen) {
+            loadModels();
         }
-
-    }, [isOpen, onClose]); 
+    }, [isOpen]);
+    
 
     useEffect(() => {
         if (!isModelsLoaded || !faceUrl) return;

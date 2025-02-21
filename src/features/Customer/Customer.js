@@ -57,6 +57,8 @@ export default function Customer() {
     const [selectedRewardId, setSelectedRewardId] = useState(null);
     const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false);
 
+    console.log("Current state:", state);
+
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const referralCode = params.get('referral');
@@ -88,17 +90,28 @@ export default function Customer() {
         setSelectedActivityImages(prevImages => prevImages.filter((_, i) => i !== index));
     };
 
-
-
     const handleSubmitSpecialActivity = () => {
-        if (!eventName || selectedActivityImages.length === 0 || !selectedScoresId) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'กรุณากรอกข้อมูลให้ครบ',
-                timer: 1500,
-                showConfirmButton: false,
-            });
-            return;
+        if (customerinfo?.st_tpye === "กยศ.") {
+            if (!eventName || selectedActivityImages.length === 0 || !selectedScoresId) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'กรุณากรอกข้อมูลให้ครบ',
+                    timer: 1500,
+                    showConfirmButton: false,
+                });
+                return;
+            }
+        } else {
+            // Check if required fields are filled for other types
+            if (!eventName || selectedActivityImages.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'กรุณากรอกข้อมูลให้ครบ',
+                    timer: 1500,
+                    showConfirmButton: false,
+                });
+                return;
+            }
         }
 
         const formData = new FormData();
@@ -139,7 +152,6 @@ export default function Customer() {
                     });
                 });
         } else {
-            // หากไม่ใช่ "กยศ." สามารถทำการส่งข้อมูลตามเส้นที่ต้องการ (เช่น uploadEventData)
             dispatch(uploadEventData(formData))
                 .unwrap()
                 .then(() => {

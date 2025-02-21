@@ -22,6 +22,13 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     console.log(faceUrl)
 
     useEffect(() => {
+        if (isOpen && isModelsLoaded) {
+            // เริ่มต้นการใช้งานกล้องเมื่อโมเดลถูกโหลดแล้ว
+            setIsWebcamReady(true);
+        }
+    }, [isOpen, isModelsLoaded]);
+
+    useEffect(() => {
         async function loadModels() {
             try {
                 const MODEL_URL = '/models'; // URL สำหรับโหลดโมเดล face-api.js
@@ -109,7 +116,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isModelsLoaded, refDescriptor, isWebcamReady, hasVerified, isOpen, isBrowserSupported]);
-    
+
 
     const verifyFace = useCallback(async () => {
         setHasVerified(true); // Prevent re-verification
@@ -203,7 +210,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     position: 'top-end',
                     timerProgressBar: true
                 });
-                
+
                 setHasVerified(false); // Allow re-verification
                 setCapturedImage(null); // Reset captured image
                 return;

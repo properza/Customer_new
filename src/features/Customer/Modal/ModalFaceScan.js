@@ -308,7 +308,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     <p>กำลังโหลดโมเดลหรือรูปอ้างอิง<span className="loading loading-dots loading-sm"></span></p>
                 ) : (
                     <>
-                        <div className="icon w-5 h-5 mx-auto">{iconState}</div>
+                        <div className="icon w-5 h-5 mx-auto my-3">{iconState}</div>
                         <Webcam
                             audio={false}
                             ref={webcamRef}

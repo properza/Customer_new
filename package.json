@@ -25,7 +25,7 @@
     "chart.js": "^4.0.1",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.7",
-    "face-api.js": "^0.20.0",
+    "face-api.js": "^0.22.2",
     "jsbarcode": "^3.11.6",
     "konva": "^9.3.18",
     "leaflet": "^1.9.4",

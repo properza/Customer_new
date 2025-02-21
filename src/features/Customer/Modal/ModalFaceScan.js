@@ -26,7 +26,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
             try {
                 const MODEL_URL = '/models';
                 console.log("Loading face-api models from:", MODEL_URL);
-    
+
                 await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
@@ -42,13 +42,13 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 handleCloseModal();
             }
         }
-    
+
         // Load models when modal is opened
         if (isOpen) {
             loadModels();
         }
     }, [isOpen]);
-    
+
 
     useEffect(() => {
         if (!isModelsLoaded || !faceUrl) return;
@@ -105,7 +105,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isModelsLoaded, refDescriptor, isWebcamReady, hasVerified, isOpen, isBrowserSupported]);
-    
+
 
     const verifyFace = useCallback(async () => {
         setHasVerified(true); // Prevent re-verification
@@ -120,7 +120,8 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 return;
             }
 
-            const video = webcamRef.current.video;
+            const video = webcamRef.current?.video;
+
             if (!video) {
                 Swal.fire({
                     icon: 'error',
@@ -152,14 +153,18 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 return;
             }
 
-            // Create a canvas to capture the frame
-            const canvas = document.createElement('canvas');
+            const canvas = faceapi.createCanvasFromMedia(video);
+            const canvasContainer = document.getElementById('canvas-container');  // Ensure you have this div in your HTML
+            canvasContainer.appendChild(canvas);
+
+            faceapi.matchDimensions(canvas, video);
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             const screenshot = canvas.toDataURL('image/jpeg');
             console.log("Captured screenshot via canvas:", screenshot);
+
             if (!screenshot || screenshot === "data:,") {
                 Swal.fire({
                     icon: 'error',
@@ -199,7 +204,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     position: 'top-end',
                     timerProgressBar: true
                 });
-                
+
                 setHasVerified(false); // Allow re-verification
                 setCapturedImage(null); // Reset captured image
                 return;

@@ -1199,7 +1199,7 @@ export default function Customer() {
                         <ModalFaceScan
                             isOpen={isFaceScanModalOpen}
                             onClose={handleCloseFaceScanModal}
-                            faceUrl={customerinfo?.faceUrl}
+                            faceUrl={customerinfo?.user?.faceUrl}
                             onSuccess={handleFaceScanSuccess}
                         />
                     }

@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import * as faceapi from 'face-api.js';
 import Swal from 'sweetalert2';
+import './shake.css'
 
 const videoConstraints = {
     facingMode: 'user', // กล้องหน้า (mobile)
@@ -28,9 +29,9 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     const [referenceImage, setReferenceImage] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
     const [isBrowserSupported, setIsBrowserSupported] = useState(true);
+    const [iconState, setIconState] = useState(iconLock);
+    const [isShaking, setIsShaking] = useState(false); 
     const maxRetries = 3; // จำนวนครั้งสูงสุดในการลองใหม่
-
-    // console.log(faceUrl)
 
     useEffect(() => {
         async function loadModels() {
@@ -204,16 +205,16 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 .withFaceDescriptor();
 
             if (!probeDetection) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'ไม่พบใบหน้าในรูปที่ถ่าย',
-                    text: 'กรุณาถ่ายรูปใหม่ที่มีใบหน้าชัดเจน',
-                    timer: 1500,
-                    showConfirmButton: false,
-                    toast: true,
-                    position: 'top-end',
-                    timerProgressBar: true
-                });
+                // Swal.fire({
+                //     icon: 'error',
+                //     title: 'ไม่พบใบหน้าในรูปที่ถ่าย',
+                //     text: 'กรุณาถ่ายรูปใหม่ที่มีใบหน้าชัดเจน',
+                //     timer: 1500,
+                //     showConfirmButton: false,
+                //     toast: true,
+                //     position: 'top-end',
+                //     timerProgressBar: true
+                // });
                 
                 setHasVerified(false); // Allow re-verification
                 setCapturedImage(null); // Reset captured image
@@ -228,28 +229,11 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
 
             const threshold = 0.4; // ลดค่าความคลาดเคลื่อนเพื่อเพิ่มความแม่นยำ
             if (distance < threshold) {
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'ใบหน้าตรงกัน!',
-                    showConfirmButton: false,
-                    timer: 1500,
-                    toast: true,
-                    position: 'top-end',
-                    timerProgressBar: true
-                });
+                setIconState(iconUnlock);
                 handleCloseModal();
                 onSuccess();
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'ใบหน้าไม่ตรงกัน!',
-                    text: 'กรุณาถ่ายรูปใหม่',
-                    timer: 1500,
-                    showConfirmButton: false,
-                    toast: true,
-                    position: 'top-end',
-                    timerProgressBar: true
-                });
+                setIconState(iconLock);
                 setHasVerified(false); // Allow re-verification
                 setCapturedImage(null); // Reset captured image
             }
@@ -268,6 +252,14 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
             setHasVerified(false); // Allow re-verification
         }
     }, [refDescriptor, onClose, onSuccess, retryCount]);
+
+    useEffect(() => {
+        if (iconState === iconUnlock) {
+          setTimeout(() => {
+            setIsShaking(false);
+          }, 1500);
+        }
+      }, [iconState]);
 
     const handleUserMedia = () => {
         console.log("Webcam is ready");
@@ -316,6 +308,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     <p>กำลังโหลดโมเดลหรือรูปอ้างอิง<span className="loading loading-dots loading-sm"></span></p>
                 ) : (
                     <>
+                        <div className="icon w-5 h-5 mx-auto">{iconState}</div>
                         <Webcam
                             audio={false}
                             ref={webcamRef}

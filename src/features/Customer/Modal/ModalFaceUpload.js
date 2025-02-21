@@ -61,7 +61,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
     
             const detections = await faceapi.detectAllFaces(
                 video,
-                new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 }) // ปรับค่าความแม่นยำ
+                new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.4 }) // ปรับค่าความแม่นยำ
             );
     
             const resizedDetections = faceapi.resizeResults(detections, displaySize);
@@ -75,7 +75,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             } else {
                 setStatus('ไม่พบใบหน้าหรือพบมากกว่า 1 ใบหน้า');
             }
-        }, 500);
+        }, 100);
     
         return () => clearInterval(interval);
     }, []);

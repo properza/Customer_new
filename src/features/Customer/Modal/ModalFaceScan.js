@@ -66,7 +66,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
             }
         }
 
-    }, [isOpen, onClose]);
+    }, [isOpen, onClose]); 
 
     useEffect(() => {
         if (!isModelsLoaded || !faceUrl) return;

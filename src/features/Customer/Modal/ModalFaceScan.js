@@ -43,9 +43,6 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
             }
         }
 
-    }, [ onClose]);
-
-    useEffect(() => {
         if (isOpen) {
             // ทดสอบการเข้าถึงกล้อง
             navigator.mediaDevices.getUserMedia({ video: true })
@@ -68,8 +65,8 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 loadModels();
             }
         }
-    }, [isOpen]);
-    
+
+    }, [isOpen, onClose]);
 
     useEffect(() => {
         if (!isModelsLoaded || !faceUrl) return;

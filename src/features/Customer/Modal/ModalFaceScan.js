@@ -301,7 +301,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                             เปิดในเว็บเบราว์เซอร์ที่รองรับ
                         </button>
                     </div>
-                ) : (!isModelsLoaded || !refDescriptor ? (
+                ) : (isModelsLoaded || !refDescriptor ? (
                     <p>กำลังโหลดโมเดลหรือรูปอ้างอิง<span className="loading loading-dots loading-sm"></span></p>
                 ) : (
                     <>

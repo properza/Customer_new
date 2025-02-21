@@ -1,20 +1,13 @@
 import * as faceapi from 'face-api.js';
-import * as tf from '@tensorflow/tfjs';
 
 export async function loadModels() {
-    // ตั้งค่าการใช้ WebGL backend
-    try {
-        // ตรวจสอบว่า WebGL พร้อมใช้งานหรือไม่
-        await tf.setBackend('webgl');
-        console.log('TensorFlow.js is running with WebGL backend');
-    } catch (error) {
-        console.error('WebGL is not available, using CPU backend');
-        await tf.setBackend('cpu'); // หาก WebGL ไม่สามารถใช้งานได้ จะใช้ CPU
-    }
-
     const MODEL_URL = process.env.PUBLIC_URL + '/models'; // ตรวจสอบให้แน่ใจว่าเส้นทางถูกต้อง
+    console.log("MODEL URL: ", MODEL_URL); // Log to ensure the URL is correct
     try {
-        // โหลดโมเดล face-api.js
+        if (!faceapi.nets.tinyFaceDetector || !faceapi.nets.faceLandmark68Net || !faceapi.nets.faceRecognitionNet) {
+            throw new Error("One of the models is not defined properly in face-api.js.");
+        }
+        await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
         await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
         await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
         await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);

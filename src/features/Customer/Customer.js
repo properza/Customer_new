@@ -4,7 +4,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import ReactPaginate from 'react-paginate';
 import Top from './Top';
 import TitleCard from '../../components/Cards/TitleCard';
-import { loginWithLine, resetState, updateinfo, gethistory, upFaceurl, signin, getrewarddata, gethistoryreward, redeemReward, usedRewards, getCloud, uploadEventData } from '../common/userSlice';
+import { loginWithLine, resetState, 
+         updateinfo, gethistory, upFaceurl, 
+         signin, getrewarddata, gethistoryreward, 
+         redeemReward, usedRewards, getCloud, 
+         uploadEventData, uploadspecialData, getscroesData, 
+         getspecialEvent 
+} from '../common/userSlice';
 import classNames from 'classnames';
 import Modal from './Modal/Modal';
 import ModalUpdateInfo from './Modal/ModalUpdateInfo';
@@ -17,6 +23,7 @@ import { th } from 'date-fns/locale';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { loadModels } from './Modal/utils/faceApi';
 import Barcode from 'react-barcode';
+import './sty.css'
 
 export default function Customer() {
     const { profile, customerinfo, isLoading, error } = useSelector((state) => state.user);
@@ -32,6 +39,8 @@ export default function Customer() {
     const historyreward = useSelector(state => state.user.gethistoryrewards);
     const Cloud = useSelector(state => state.user.getClouds);
     const getreward = useSelector(state => state.user.getrewardslist);
+    const scroesData = useSelector(state => state.user.getscroesDatas);
+    const specialEvent = useSelector(state => state.user.getspecialEvents);
     const [isModalDetailOpen, setIsModalDetailOpen] = useState(false);
     const [selectedActivity, setSelectedActivity] = useState(null);
     const [isFaceUploadModalOpen, setIsFaceUploadModalOpen] = useState(false);
@@ -47,11 +56,15 @@ export default function Customer() {
 
     const [selectedRewardId, setSelectedRewardId] = useState(null);
     const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false);
-
+    const [selectedScoresId, setselectedScoresId] = useState(0);
     const handleBarcodeClick = (rewardId) => {
         setSelectedRewardId(rewardId);
         setIsBarcodeModalOpen(true);
     };
+
+    useEffect(() => {
+        dispatch(getscroesData())
+    }, [dispatch])
 
     const handleImageChange = (event) => {
         const files = Array.from(event.target.files);
@@ -76,8 +89,10 @@ export default function Customer() {
         setSelectedActivityImages(prevImages => prevImages.filter((_, i) => i !== index));
     };
 
+
+
     const handleSubmitSpecialActivity = () => {
-        if (!eventName || selectedActivityImages.length === 0) {
+        if (!eventName || selectedActivityImages.length === 0 || !selectedScoresId) {
             Swal.fire({
                 icon: 'warning',
                 title: 'กรุณากรอกข้อมูลให้ครบ',
@@ -87,10 +102,10 @@ export default function Customer() {
             return;
         }
 
-
         const formData = new FormData();
         formData.append('event_name', eventName);  // แฟ้ม event_name
         formData.append('customer_id', profile.userId);  // แฟ้ม customerId
+        formData.append('scores_id', selectedScoresId); // เพิ่ม scores_id จาก select option
 
         // การเพิ่มไฟล์หลายไฟล์ใน images
         selectedActivityImages.forEach((img) => {
@@ -99,30 +114,58 @@ export default function Customer() {
 
         console.log(formData)
 
-        // ส่งข้อมูลไปยัง backend
-        dispatch(uploadEventData(formData))
-            .unwrap()
-            .then(() => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'ข้อมูลถูกส่งเรียบร้อย',
-                    timer: 1500,
-                    showConfirmButton: false,
+        // ตรวจสอบว่าเป็น "กยศ." หรือไม่
+        if (customerinfo?.st_tpye === "กยศ.") {
+            // ส่งข้อมูลไปยังเส้น uploadspecialData
+            dispatch(uploadspecialData(formData))
+                .unwrap()
+                .then(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ข้อมูลถูกส่งเรียบร้อย',
+                        timer: 1500,
+                        showConfirmButton: false,
+                    });
+                    setIsSpecialActivityModalOpen(false);
+                    setSelectedActivityImages([]);
+                    setEventName('');
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: error.message || 'กรุณาลองใหม่',
+                        timer: 1500,
+                        showConfirmButton: false,
+                    });
                 });
-                setIsSpecialActivityModalOpen(false);
-                setSelectedActivityImages([]);
-                setEventName('');
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: error.message || 'กรุณาลองใหม่',
-                    timer: 1500,
-                    showConfirmButton: false,
+        } else {
+            // หากไม่ใช่ "กยศ." สามารถทำการส่งข้อมูลตามเส้นที่ต้องการ (เช่น uploadEventData)
+            dispatch(uploadEventData(formData))
+                .unwrap()
+                .then(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ข้อมูลถูกส่งเรียบร้อย',
+                        timer: 1500,
+                        showConfirmButton: false,
+                    });
+                    setIsSpecialActivityModalOpen(false);
+                    setSelectedActivityImages([]);
+                    setEventName('');
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: error.message || 'กรุณาลองใหม่',
+                        timer: 1500,
+                        showConfirmButton: false,
+                    });
                 });
-            });
+        }
     };
+
 
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
@@ -143,6 +186,8 @@ export default function Customer() {
     };
 
 
+
+    console.log('ข้อมูล', scroesData)
 
     useEffect(() => {
         loadModels().then(() => console.log("Models loaded"));
@@ -167,6 +212,7 @@ export default function Customer() {
             dispatch(getrewarddata({ page: currentPage, userID: profile.userId }));
             dispatch(gethistoryreward({ page: currentPage, userID: profile.userId }));
             dispatch(getCloud({ page: currentPage, userID: profile.userId }));
+            dispatch(getspecialEvent({ page: currentPage, userID: profile.userId }));
         }
     }, [dispatch, profile, currentPage]);
 
@@ -635,7 +681,7 @@ export default function Customer() {
                             {icons}
                             <p className='text-white font-medium text-base'>คะแนน : {customerinfo?.total_point || 0}</p>
                         </div>
-                        <button className='bg-[#FF9C00] text-white rounded-md px-2 py-1' onClick={() => setIsSpecialActivityModalOpen(true)} >กิจกรรมพิเศษ</button>
+                        <button className='bg-[#FF9C00] text-white rounded-md px-2 py-1' onClick={() => setIsSpecialActivityModalOpen(true)} > {customerinfo?.st_tpye !== "กยศ." ? "กิจกรรมพิเศษ" : "กิจกรรมจิตอาสา"}</button>
                     </div>
                 </div>
             </div>
@@ -666,7 +712,7 @@ export default function Customer() {
                     <TitleCard title={'ประวัติกิจกรรม'} title2={`ทั้งหมด ${(activebtn === 'history' && activebtn2 === 'history') ? historyData.meta?.total || 0 : Cloud.meta?.total || 0} รายการ`} topMargin={'mt-1'}>
                         <div className="flex gap-2 mt-[-1rem] mb-2">
                             <button className={`${(activebtn === 'history' && activebtn2 === 'history') ? 'active' : ''}`} onClick={() => setactivebtn2('history')}>ประวัติกิจกรรม</button>
-                            <button className={`${activebtn2 === 'specialHS' ? 'active' : ''}`} onClick={() => setactivebtn2('specialHS')}>กิจกรรมพิเศษ</button>
+                            <button className={`${activebtn2 === 'specialHS' ? 'active' : ''}`} onClick={() => setactivebtn2('specialHS')}> {customerinfo?.st_tpye !== 'กยศ.' ? 'กิจกรรมพิเศษ' : 'กิจกรรมจิตอาสา' }</button>
                         </div>
                         {(activebtn === 'history' && activebtn2 === 'history') ?
                             <div className="overflow-auto h-[45vh]">
@@ -737,14 +783,27 @@ export default function Customer() {
                             <div className="overflow-auto h-[45vh]">
                                 <table className='table w-full border-collapse border border-gray-200'>
                                     <thead className='bg-[#F7D4E8]'>
+                                    {customerinfo?.st_tpye !== "กยศ." ?<>
                                         <tr>
                                             <th className="border px-4 py-2">ลำดับ</th>
                                             <th className="border px-4 py-2">กิจกรรม</th>
                                             <th className="border px-4 py-2">วันที่สร้าง</th>
                                             <th className="border px-4 py-2">รูปภาพ</th>
                                         </tr>
+                                        </> 
+                                        : <>
+                                        <tr>
+                                            <th className="border px-4 py-2">ลำดับ</th>
+                                            <th className="border px-4 py-2">กิจกรรม</th>
+                                            <th className="border px-4 py-2">ประเภท</th>
+                                            <th className="border px-4 py-2">วันที่สร้าง</th>
+                                            <th className="border px-4 py-2">รูปภาพ</th>
+                                            <th className="border px-4 py-2">สถานะ</th>
+                                        </tr>
+                                        </>}
                                     </thead>
                                     <tbody>
+                                        {customerinfo?.st_tpye !== "กยศ." ? <>
                                         {/* Replace with dynamic data */}
                                         {Cloud.data ?
                                             Cloud.data?.map((activity, index) => (
@@ -758,16 +817,58 @@ export default function Customer() {
                                             <tr>
                                                 <td colSpan="5" className="text-center py-4">ไม่มีข้อมูล</td>
                                             </tr>
+                                        }</> : <>
+                                        {specialEvent.data ?
+                                            specialEvent.data?.map((activity, index) => (
+                                                <tr key={activity.id}>
+                                                    <td className="border px-4 py-2">{index + 1}</td>
+                                                    <td className="border px-4 py-2">{activity.event_name}</td>
+                                                    <td className="border px-4 py-2">{activity.scores_type}</td>
+                                                    <td className="border px-4 py-2">{activity.created_at ? format(new Date(activity.created_at), "d MMM yyyy HH:mm", { locale: th }) : activity.status}</td>
+                                                    <td className="border px-4 py-2" onClick={() => handleImageClick(activity.images, 0)}> <div className="w-6 h-6">{image}</div></td>
+                                                    <td className="border px-4 py-2 whitespace-nowrap text-center">{activity.status === 'อนุมัติ' ? <p className='p-1 rounded bg-green-500 text-white'>{activity.status}</p>:activity.status === 'รอดำเนินการ' ? <p className='p-1 rounded bg-orange-400 text-white'>{activity.status}</p> : <p className='p-1 rounded bg-red-400 text-white'>{activity.status}</p>}</td>
+                                                </tr>
+                                            )) :
+                                            <tr>
+                                                <td colSpan="5" className="text-center py-4">ไม่มีข้อมูล</td>
+                                            </tr>
                                         }
+                                        </>}
                                     </tbody>
                                 </table>
-                                {Cloud.meta?.total >= 10 &&
+                                {customerinfo?.st_tpye !== "กยศ." ?<>
+                                    {Cloud.meta?.total >= 10 &&
+                                        <div className="flex justify-end mt-10">
+                                            <ReactPaginate
+                                                previousLabel={"<"}
+                                                nextLabel={">"}
+                                                breakLabel={"..."}
+                                                pageCount={Cloud.meta?.last_page || 1}
+                                                marginPagesDisplayed={2}
+                                                pageRangeDisplayed={3}
+                                                onPageChange={handlePageChange}
+                                                containerClassName={"pagination"}
+                                                activeClassName={"active"}
+                                                breakClassName={"page-item"}
+                                                breakLinkClassName={"page-link"}
+                                                pageClassName={"page-item"}
+                                                pageLinkClassName={"page-link"}
+                                                previousClassName={"page-item"}
+                                                previousLinkClassName={"page-link"}
+                                                nextClassName={"page-item"}
+                                                nextLinkClassName={"page-link"}
+                                                disabledClassName={"disabled"}
+                                            />
+                                        </div>
+                                    }</>
+                                :
+                                <>{specialEvent.meta?.total >= 10 &&
                                     <div className="flex justify-end mt-10">
                                         <ReactPaginate
                                             previousLabel={"<"}
                                             nextLabel={">"}
                                             breakLabel={"..."}
-                                            pageCount={Cloud.meta?.last_page || 1}
+                                            pageCount={specialEvent.meta?.last_page || 1}
                                             marginPagesDisplayed={2}
                                             pageRangeDisplayed={3}
                                             onPageChange={handlePageChange}
@@ -784,7 +885,7 @@ export default function Customer() {
                                             disabledClassName={"disabled"}
                                         />
                                     </div>
-                                }
+                                }</>}
                             </div>
 
                         }
@@ -1004,6 +1105,23 @@ export default function Customer() {
                             className="w-full p-2 mb-4 border border-gray-300 rounded"
                         />
 
+                        <div className='mb-4'>
+                            <label htmlFor="scoreSelect">เลือกกิจกรรม:</label>
+                            <select
+                                id="scoreSelect"
+                                value={selectedScoresId}
+                                onChange={(e) => setselectedScoresId(e.target.value)}
+                                className="w-full p-2 border border-gray-300 rounded max-w-xs overflow-ellipsis"
+                            >
+                                <option value="">กรุณาเลือกกิจกรรม</option>
+                                {scroesData.data.map((score) => (
+                                    <option key={score.id} value={score.id} className='max-w-xs overflow-ellipsis'>
+                                        ประเภทที่ {score.type} {score.name_type}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
                         {/* อัปโหลดรูปภาพ */}
                         <input
                             type="file"
@@ -1056,7 +1174,7 @@ export default function Customer() {
                 <Modal isOpen={isBarcodeModalOpen} onClose={() => setIsBarcodeModalOpen(false)}>
                     <div className="grid justify-center items-center gap-1">
                         <h3>รหัสของรางวัล : {selectedRewardId}</h3>
-                        <Barcode value={selectedRewardId}/>
+                        <Barcode value={selectedRewardId} />
                         {/* <button onClick={() => setIsBarcodeModalOpen(false)} className="close-btn">Close</button> */}
                     </div>
                 </Modal>

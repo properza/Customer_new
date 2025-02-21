@@ -1,0 +1,5 @@
+.truncate {
+    white-space: nowrap;        /* ไม่ให้ข้อความไปหลายบรรทัด */
+    overflow: hidden;           /* ซ่อนข้อความที่เกิน */
+    text-overflow: ellipsis;    /* แสดง ... เมื่อข้อความยาวเกิน */
+}

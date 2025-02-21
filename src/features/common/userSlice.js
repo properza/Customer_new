@@ -22,7 +22,13 @@ const uploadFaceUrl = `${baseurl}customer/customerinfo/uploadfaceid`
 const register = (eventid) => `${baseurl}events/registerCustomer/${eventid}`;
 const useRewardUrl = `${baseurl}customer/rewards/use`
 const getcloudEvent = ( page , userID )=>`${baseurl}customer/cloud/customer/${userID}?page=${page}&per_page=10`
+const getspecialEventUrl = ( page , userID )=>`${baseurl}customer/special-events/${userID}?page=${page}&per_page=10`
 const uploadspecialEvent = `${baseurl}customer/uploadEvent/`
+const uploadspecialSTUrl = `${baseurl}customer/special-events/`
+
+//utils
+const getScroesUrl = `${baseurl}customer/scores-list/`
+
 
 function mobileCheck() {
   const userAgent = navigator.userAgent || navigator.vendor || window.opera;
@@ -132,7 +138,6 @@ export const updateinfo = createAsyncThunk(
   }
 );
 
-
 export const upFaceurl = createAsyncThunk(
   "user/upFaceurls",
   async ({ fileData }, { rejectWithValue }) => {
@@ -145,7 +150,6 @@ export const upFaceurl = createAsyncThunk(
     try {
       const response = await axios.put(url, fileData, {
         headers: {
-          // ไม่ต้องกำหนด 'Content-Type' เพราะ axios จะตั้งค่าให้เองเมื่อใช้ FormData
         },
       });
       return response.data;
@@ -170,6 +174,36 @@ export const uploadEventData = createAsyncThunk(
   "user/uploadEventDatas",
   async (formData , { rejectWithValue }) => {
     const url = uploadspecialEvent;
+
+
+    try {
+      const response = await axios.post(url, formData, {
+        headers: {
+          // ไม่ต้องกำหนด 'Content-Type' เพราะ axios จะตั้งค่าให้เองเมื่อใช้ FormData
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Upload failed:", error.response?.data || error.message);
+
+      if (error.response) {
+        const { status, data } = error.response;
+        if (status >= 400 && status < 500) {
+          return rejectWithValue(data?.message || "Client error occurred");
+        } else if (status >= 500) {
+          return rejectWithValue("Server error occurred. Please try again later.");
+        }
+      }
+
+      return rejectWithValue("Network error occurred. Please check your connection.");
+    }
+  }
+);
+
+export const uploadspecialData = createAsyncThunk(
+  "user/uploadspecialSTs",
+  async (formData , { rejectWithValue }) => {
+    const url = uploadspecialSTUrl;
 
 
     try {
@@ -294,12 +328,53 @@ export const gethistoryreward = createAsyncThunk(
   }
 );
 
+export const getscroesData = createAsyncThunk(
+  "users/getscroesDatas",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(getScroesUrl,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching history:", error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || "Error occurred while fetching events");
+    }
+  }
+);
+
 export const getCloud = createAsyncThunk(
   "users/getClouds",
   async ({ page = 1, userID }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
         getcloudEvent(page, userID),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching history:", error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || "Error occurred while fetching events");
+    }
+  }
+);
+
+export const getspecialEvent = createAsyncThunk(
+  "users/getspecialEvents",
+  async ({ page = 1, userID }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        getspecialEventUrl(page, userID),
         {
           headers: {
             'Content-Type': 'application/json',
@@ -368,9 +443,11 @@ const userSlice = createSlice({
     isLoading: false,
     error: null,
     response: null,
+    getscroesDatas: { data: [] },
     gethistorysData: { data: [], meta: {} },
     gethistoryrewards: { data: [], meta: {} },
     getClouds: { data: [], meta: {} },
+    getspecialEvents: { data: [], meta: {} },
     getrewardslist: { data: [], meta: {} },
   },
   reducers: {
@@ -433,8 +510,12 @@ const userSlice = createSlice({
             state.gethistorysData = action.payload;
           } else if (action.type.includes("gethistoryrewards")) {
             state.gethistoryrewards = action.payload;
+          } else if (action.type.includes("getscroesDatas")) {
+            state.getscroesDatas = action.payload;
           } else if (action.type.includes("getClouds")) {
             state.getClouds = action.payload;
+          } else if (action.type.includes("getspecialEvents")) {
+            state.getspecialEvents = action.payload;
           } else if (action.type.includes("getrewards")) {
             state.getrewardslist = action.payload;
           }

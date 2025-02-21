@@ -24,10 +24,10 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     useEffect(() => {
         async function loadModels() {
             try {
-                const MODEL_URL = '/models';
+                const MODEL_URL = '/models'; // URL สำหรับโหลดโมเดล face-api.js
                 console.log("Loading face-api models from:", MODEL_URL);
-
-                await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+                await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL); // ใช้โมเดล DNN สำหรับความแม่นยำสูง
+                // await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
                 setIsModelsLoaded(true);
@@ -43,12 +43,16 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
             }
         }
 
-        // Load models when modal is opened
+        // ตรวจสอบการสนับสนุน getUserMedia
         if (isOpen) {
-            loadModels();
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                setIsBrowserSupported(false);
+            } else {
+                setIsBrowserSupported(true);
+                loadModels();
+            }
         }
-    }, [isOpen]);
-
+    }, [isOpen, onClose]);
 
     useEffect(() => {
         if (!isModelsLoaded || !faceUrl) return;
@@ -105,7 +109,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isModelsLoaded, refDescriptor, isWebcamReady, hasVerified, isOpen, isBrowserSupported]);
-
+    
 
     const verifyFace = useCallback(async () => {
         setHasVerified(true); // Prevent re-verification
@@ -120,8 +124,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 return;
             }
 
-            const video = webcamRef.current?.video;
-
+            const video = webcamRef.current.video;
             if (!video) {
                 Swal.fire({
                     icon: 'error',
@@ -153,18 +156,14 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 return;
             }
 
-            const canvas = faceapi.createCanvasFromMedia(video);
-            const canvasContainer = document.getElementById('canvas-container');  // Ensure you have this div in your HTML
-            canvasContainer.appendChild(canvas);
-
-            faceapi.matchDimensions(canvas, video);
+            // Create a canvas to capture the frame
+            const canvas = document.createElement('canvas');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             const screenshot = canvas.toDataURL('image/jpeg');
             console.log("Captured screenshot via canvas:", screenshot);
-
             if (!screenshot || screenshot === "data:,") {
                 Swal.fire({
                     icon: 'error',
@@ -204,7 +203,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     position: 'top-end',
                     timerProgressBar: true
                 });
-
+                
                 setHasVerified(false); // Allow re-verification
                 setCapturedImage(null); // Reset captured image
                 return;

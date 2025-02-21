@@ -7,6 +7,17 @@ const videoConstraints = {
     facingMode: 'user', // กล้องหน้า (mobile)
 };
 
+const iconLock = 
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+    </svg>;
+
+const iconUnlock =
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+    </svg>;
+
+
 function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     const webcamRef = useRef(null);
     const [isModelsLoaded, setIsModelsLoaded] = useState(false);
@@ -19,7 +30,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     const [isBrowserSupported, setIsBrowserSupported] = useState(true);
     const maxRetries = 3; // จำนวนครั้งสูงสุดในการลองใหม่
 
-    console.log(faceUrl)
+    // console.log(faceUrl)
 
     useEffect(() => {
         async function loadModels() {

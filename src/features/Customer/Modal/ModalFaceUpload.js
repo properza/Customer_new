@@ -52,31 +52,31 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
         const canvas = canvasRef.current;
         const displaySize = { width: video.videoWidth, height: video.videoHeight };
         faceapi.matchDimensions(canvas, displaySize);
-
+    
         const interval = setInterval(async () => {
             if (video.paused || video.ended) {
                 clearInterval(interval);
                 return;
             }
-
+    
             const detections = await faceapi.detectAllFaces(
                 video,
-                new faceapi.TinyFaceDetectorOptions()
+                new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 }) // ปรับค่าความแม่นยำ
             );
-
+    
             const resizedDetections = faceapi.resizeResults(detections, displaySize);
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             faceapi.draw.drawDetections(canvas, resizedDetections);
-
+    
             if (detections.length === 1) {
                 const isClear = await isImageClear(video);
                 setStatus(isClear ? 'ใช้ได้' : 'ไม่ใช้ได้');
             } else {
                 setStatus('ไม่พบใบหน้าหรือพบมากกว่า 1 ใบหน้า');
             }
-        }, 500); // ตรวจสอบทุก 500ms
-
+        }, 500);
+    
         return () => clearInterval(interval);
     }, []);
 
@@ -88,26 +88,28 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
+    
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const data = imageData.data;
             let variance = 0;
             let mean = 0;
             const len = data.length;
-
+    
+            // คำนวณค่าเฉลี่ยสี
             for (let i = 0; i < len; i += 4) {
                 const gray = 0.2989 * data[i] + 0.5870 * data[i + 1] + 0.1140 * data[i + 2];
                 mean += gray;
             }
             mean /= len / 4;
-
+    
+            // คำนวณความแปรผันของสี
             for (let i = 0; i < len; i += 4) {
                 const gray = 0.2989 * data[i] + 0.5870 * data[i + 1] + 0.1140 * data[i + 2];
                 variance += Math.pow(gray - mean, 2);
             }
             variance /= len / 4;
-
-            const BLUR_THRESHOLD = 100;
+    
+            const BLUR_THRESHOLD = 100; // ปรับเกณฑ์ให้ตรวจจับได้ชัดเจนขึ้น
             resolve(variance > BLUR_THRESHOLD);
         });
     };
@@ -133,8 +135,6 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
         }
         setIsSubmitting(false);
     };
-
-    
 
     // ฟังก์ชันบันทึก/อัปโหลด
     const handleSubmit = () => {

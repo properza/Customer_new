@@ -19,6 +19,8 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     const [isBrowserSupported, setIsBrowserSupported] = useState(true);
     const maxRetries = 3; // จำนวนครั้งสูงสุดในการลองใหม่
 
+    console.log(faceUrl)
+
     useEffect(() => {
         async function loadModels() {
             try {

@@ -52,7 +52,8 @@
     "sweetalert2": "^11.6.13",
     "theme-change": "^2.2.0",
     "tslib": "^2.5.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "yocto-queue": "^1.1.1"
   },
   "repository": {
     "type": "git",

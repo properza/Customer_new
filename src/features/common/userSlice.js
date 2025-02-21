@@ -73,7 +73,7 @@ export const loginWithLine = createAsyncThunk(
       console.log("Profile retrieved:", profile);
 
       // ส่งข้อมูลโปรไฟล์และ referral ไปยัง Redux store
-      dispatch(getuser({profile}));
+      dispatch(getuser({ profile , referral }));
 
       return profile;
 

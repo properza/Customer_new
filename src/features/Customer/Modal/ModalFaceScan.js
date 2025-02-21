@@ -301,7 +301,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                             เปิดในเว็บเบราว์เซอร์ที่รองรับ
                         </button>
                     </div>
-                ) : (isModelsLoaded || !refDescriptor ? (
+                ) : (!isModelsLoaded || !refDescriptor ? (
                     <p>กำลังโหลดโมเดลหรือรูปอ้างอิง<span className="loading loading-dots loading-sm"></span></p>
                 ) : (
                     <>
@@ -311,22 +311,6 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                             screenshotFormat="image/jpeg"
                             videoConstraints={videoConstraints}
                             onUserMedia={handleUserMedia}
-                            onUserMediaError={(error) => {
-                                console.error("Webcam error:", error);
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'ไม่สามารถเข้าถึงกล้องได้',
-                                    text: 'กรุณาเปิดกล้องใหม่และลองอีกครั้ง',
-                                    showCancelButton: true,
-                                    confirmButtonText: 'เปิดในเว็บเบราว์เซอร์ที่รองรับ',
-                                    cancelButtonText: 'ปิด',
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        openInSupportedBrowser();
-                                    }
-                                });
-                                handleCloseModal();
-                            }}
                             className="mx-auto rounded-md transform scale-x-[-1]"
                             style={{ width: '100%', height: 'auto' }}
                         />

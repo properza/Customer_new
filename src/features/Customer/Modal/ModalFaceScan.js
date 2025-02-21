@@ -69,21 +69,32 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     useEffect(() => {
         if (!isModelsLoaded || !faceUrl) return;
 
-        async function fetchReferenceDescriptor() {
+        const fetchReferenceDescriptor = async () => {
             try {
                 const refImgElement = await faceapi.fetchImage(faceUrl);
-                setReferenceImage(faceUrl);
-
+                if (!refImgElement) {
+                    console.warn("Failed to load reference image.");
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ไม่พบใบหน้าในรูปอ้างอิง',
+                        text: 'กรุณาอัปโหลดรูปใบหน้าใหม่ที่มีใบหน้าชัดเจน',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    handleCloseModal();
+                    return;
+                }
+        
                 const detectionOptions = new faceapi.TinyFaceDetectorOptions({
                     inputSize: 512,
                     scoreThreshold: 0.5,
                 });
-
+        
                 const detection = await faceapi
                     .detectSingleFace(refImgElement, detectionOptions)
                     .withFaceLandmarks()
                     .withFaceDescriptor();
-
+        
                 if (detection) {
                     console.log("Reference Face Detected:", detection);
                     setRefDescriptor(detection.descriptor);
@@ -107,9 +118,9 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     timer: 1500,
                     showConfirmButton: false
                 });
-                // handleCloseModal();
+                handleCloseModal();
             }
-        }
+        };
 
         fetchReferenceDescriptor();
     }, [isModelsLoaded, faceUrl, onClose]);

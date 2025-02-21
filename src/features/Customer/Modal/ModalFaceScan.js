@@ -286,7 +286,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     return (
         <div
             className="modal-overlay fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
-            onClick={handleCloseModal}
+            // onClick={handleCloseModal}
         >
             <div
                 className="modal-content bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md !z-10 relative"
@@ -321,12 +321,12 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                         <p className="mt-4 text-center">ระบบกำลังตรวจจับใบหน้า...</p>
                     </>
                 ))}
-                <button
+                {/* <button
                     onClick={handleCloseModal}
                     className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
                 >
                     X
-                </button>
+                </button> */}
             </div>
         </div>
     );

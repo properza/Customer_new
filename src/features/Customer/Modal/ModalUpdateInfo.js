@@ -362,7 +362,7 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
                     <button onClick={handleSubmit} className="bg-blue-500 text-white rounded-md px-4 py-2">
                         บันทึก
                     </button>
-                    <button onClick={onClose} className="bg-gray-300 text-black rounded-md px-4 py-2">
+                    <button onClick={onClose} disabled={!customerinfo.st_tpye} className="bg-gray-300 text-black rounded-md px-4 py-2">
                         ยกเลิก
                     </button>
                 </div>

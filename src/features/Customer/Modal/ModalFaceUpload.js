@@ -185,7 +185,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
     return (
         <div
             className="modal-overlay fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
-            onClick={onClose}
+            // onClick={onClose}
         >
             <div
                 className="modal-content bg-white p-4 rounded-lg shadow-lg w-[90%] max-w-md relative"
@@ -275,12 +275,12 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                     </>
                 )}
 
-                <button
+                {/* <button
                     onClick={onClose}
                     className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
                 >
                     X
-                </button>
+                </button> */}
             </div>
         </div>
     );

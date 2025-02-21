@@ -75,7 +75,7 @@ export default function Customer() {
                 showConfirmButton: false,
             });
             return;
-        }
+        }  
 
         const newImages = files.map(file => ({
             file,

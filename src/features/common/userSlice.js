@@ -73,7 +73,7 @@ export const loginWithLine = createAsyncThunk(
       console.log("Profile retrieved:", profile);
 
       // ส่งข้อมูลโปรไฟล์และ referral ไปยัง Redux store
-      dispatch(getuser({ profile , referral }));
+      dispatch(getuser(profile));
 
       return profile;
 
@@ -86,7 +86,7 @@ export const loginWithLine = createAsyncThunk(
 
 export const getuser = createAsyncThunk(
   'user/getuserData',
-  async ({ profile, retryCount = 0 }, { rejectWithValue, dispatch }) => {
+  async ({ profile }, { rejectWithValue }) => {
     try {
       const response = await axios.post(getprofile,
         {
@@ -100,16 +100,8 @@ export const getuser = createAsyncThunk(
           },
         }
       );
-
       return response.data;
-
     } catch (error) {
-      if (retryCount < 3 && error.response && error.response.status === 500) {
-        // ถ้า error เป็น Internal Server Error, และ retry ยังไม่เกิน 3 ครั้ง, เรียก getuser ใหม่
-        console.log(`Retrying getuser request, attempt ${retryCount + 1}`);
-        return dispatch(getuser({ profile, retryCount: retryCount + 1 })); // Retry
-      }
-
       return rejectWithValue(error.response ? error.response.data : error.message);
     }
   }

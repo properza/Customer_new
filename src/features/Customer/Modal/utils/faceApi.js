@@ -17,3 +17,4 @@ export async function loadModels() {
         throw error; // ส่งต่อข้อผิดพลาดให้ตัวเรียกใช้งาน
     }
 }
+ 

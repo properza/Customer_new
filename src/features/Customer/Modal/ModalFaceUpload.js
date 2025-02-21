@@ -38,6 +38,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
     useEffect(() => {
         const loadModels = async () => {
             const MODEL_URL = '/models'; // ที่อยู่ของโมเดล face-api.js
+            await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
             await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
             await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
             await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
@@ -61,7 +62,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
     
             const detections = await faceapi.detectAllFaces(
                 video,
-                new faceapi.TinyFaceDetectorOptions({ inputSize: 512 , scoreThreshold: 0.4 }) // ปรับค่าความแม่นยำ
+                new faceapi.TinyFaceDetectorOptions({ inputSize: 512 , scoreThreshold: 0.5 }) // ปรับค่าความแม่นยำ
             );
     
             const resizedDetections = faceapi.resizeResults(detections, displaySize);

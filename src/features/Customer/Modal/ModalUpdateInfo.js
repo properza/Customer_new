@@ -333,7 +333,7 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
                 </select>
 
                 {/* ประเภทนักศึกษา (select) */}
-                {!formData.st_tpye &&
+                {!customerinfo.st_tpye &&
                 <select
                     name="st_tpye"
                     value={formData.st_tpye}

@@ -1187,7 +1187,7 @@ export default function Customer() {
                 </Modal>
 
                 {/* Loading Modal */}
-                <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                <Modal isOpen={isModalOpen}>
                     <div className="flex flex-col items-center">
                         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"></div>
                         <p>กำลังโหลด...</p>

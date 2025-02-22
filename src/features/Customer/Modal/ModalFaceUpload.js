@@ -130,8 +130,8 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 // const scaleFactor = 2;
-                canvas.width = img.width * scaleFactor;
-                canvas.height = img.height * scaleFactor;
+                canvas.width = img.width;
+                canvas.height = img.height;
                 // ctx.scale(scaleFactor, scaleFactor);
                 ctx.drawImage(img, 0, 0);
                 // const correctedScreenshot = canvas.toDataURL('image/jpeg', 0.9);

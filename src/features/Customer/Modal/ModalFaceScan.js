@@ -238,7 +238,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 //     position: 'top-end',
                 //     timerProgressBar: true
                 // });
-                setIcon('success');  // แสดงไอคอน success
+                await setIcon('success');  // แสดงไอคอน success
                 setIconMessage('ใบหน้าตรงกัน!');
                 handleCloseModal();
                 onSuccess();

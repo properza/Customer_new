@@ -31,7 +31,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     const [isBrowserSupported, setIsBrowserSupported] = useState(true);
     const [iconState, setIconState] = useState(iconLock);
     const [isShaking, setIsShaking] = useState(false); 
-    const maxRetries = 3; // จำนวนครั้งสูงสุดในการลองใหม่
+    const maxRetries = 15; // จำนวนครั้งสูงสุดในการลองใหม่
 
     useEffect(() => {
         async function loadModels() {
@@ -149,7 +149,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
             console.log("Video height:", video.videoHeight);
 
             if (video.videoWidth === 0 || video.videoHeight === 0) {
-                if (retryCount) {
+                if (retryCount < maxRetries) {
                     console.warn("Video not ready yet. Dimensions are zero. Retrying in 500ms...");
                     setTimeout(verifyFace, 500); // Retry after 500ms
                     setRetryCount(prev => prev + 1);

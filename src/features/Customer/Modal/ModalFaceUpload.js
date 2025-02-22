@@ -76,7 +76,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             } else {
                 setStatus('ไม่พบใบหน้าหรือพบมากกว่า 1 ใบหน้า');
             }
-        }, 100);
+        }, 500);
     
         return () => clearInterval(interval);
     }, []);

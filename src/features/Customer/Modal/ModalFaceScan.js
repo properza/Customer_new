@@ -205,16 +205,16 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 .withFaceDescriptor();
 
             if (!probeDetection) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'ไม่พบใบหน้าในรูปที่ถ่าย',
-                    text: 'กรุณาถ่ายรูปใหม่ที่มีใบหน้าชัดเจน',
-                    timer: 1500,
-                    showConfirmButton: false,
-                    toast: true,
-                    position: 'top-end',
-                    timerProgressBar: true
-                });
+                // Swal.fire({
+                //     icon: 'error',
+                //     title: 'ไม่พบใบหน้าในรูปที่ถ่าย',
+                //     text: 'กรุณาถ่ายรูปใหม่ที่มีใบหน้าชัดเจน',
+                //     timer: 1500,
+                //     showConfirmButton: false,
+                //     toast: true,
+                //     position: 'top-end',
+                //     timerProgressBar: true
+                // });
                 
                 setHasVerified(false);
                 setCapturedImage(null);

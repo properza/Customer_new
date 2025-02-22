@@ -72,18 +72,18 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
         const fetchReferenceDescriptor = async () => {
             try {
                 const refImgElement = await faceapi.fetchImage(faceUrl);
-                if (!refImgElement) {
-                    console.warn("Failed to load reference image.");
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'ไม่พบใบหน้าในรูปอ้างอิง1',
-                        text: 'กรุณาอัปโหลดรูปใบหน้าใหม่ที่มีใบหน้าชัดเจน',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                    handleCloseModal();
-                    return;
-                }
+                // if (!refImgElement) {
+                //     console.warn("Failed to load reference image.");
+                //     Swal.fire({
+                //         icon: 'error',
+                //         title: 'ไม่พบใบหน้าในรูปอ้างอิง1',
+                //         text: 'กรุณาอัปโหลดรูปใบหน้าใหม่ที่มีใบหน้าชัดเจน',
+                //         timer: 1500,
+                //         showConfirmButton: false
+                //     });
+                //     handleCloseModal();
+                //     return;
+                // }
         
                 const detectionOptions = new faceapi.TinyFaceDetectorOptions({
                     inputSize: 1024,

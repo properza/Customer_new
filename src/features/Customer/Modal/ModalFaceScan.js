@@ -2,22 +2,10 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import * as faceapi from 'face-api.js';
 import Swal from 'sweetalert2';
-import './shake.css'
 
 const videoConstraints = {
     facingMode: 'user', // กล้องหน้า (mobile)
 };
-
-const iconLock = 
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-    </svg>;
-
-const iconUnlock =
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-    </svg>;
-
 
 function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     const webcamRef = useRef(null);
@@ -29,8 +17,6 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     const [referenceImage, setReferenceImage] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
     const [isBrowserSupported, setIsBrowserSupported] = useState(true);
-    const [iconState, setIconState] = useState(iconLock);
-    const [isShaking, setIsShaking] = useState(false); 
     const maxRetries = 50; // จำนวนครั้งสูงสุดในการลองใหม่
 
     useEffect(() => {
@@ -39,7 +25,6 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 const MODEL_URL = '/models'; // URL สำหรับโหลดโมเดล face-api.js
                 console.log("Loading face-api models from:", MODEL_URL);
                 await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL); // ใช้โมเดล DNN สำหรับความแม่นยำสูง
-                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
                 setIsModelsLoaded(true);
@@ -75,8 +60,8 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 setReferenceImage(faceUrl);
 
                 const detectionOptions = new faceapi.TinyFaceDetectorOptions({
-                    inputSize: 512,
-                    scoreThreshold: 0.5,
+                    inputSize: 512, // ขนาดอินพุตเพื่อเพิ่มความแม่นยำ
+                    scoreThreshold: 0.5, // ค่าความไวของการตรวจจับ
                 });
 
                 const detection = await faceapi
@@ -93,9 +78,10 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                         icon: 'error',
                         title: 'ไม่พบใบหน้าในรูปอ้างอิง',
                         text: 'กรุณาอัปโหลดรูปใบหน้าใหม่ที่มีใบหน้าชัดเจน',
-                        timer:1500,
-                        showConfirmButton:false
+                        timer: 1500,
+                        showConfirmButton: false
                     });
+                    handleCloseModal();
                 }
             } catch (error) {
                 console.error("Error fetching reference image descriptor:", error);
@@ -103,9 +89,10 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     icon: 'error',
                     title: 'เกิดข้อผิดพลาดในการโหลดรูปอ้างอิง',
                     text: 'กรุณาตรวจสอบ URL หรือ Backend',
-                    timer:1500,
-                    showConfirmButton:false
+                    timer: 1500,
+                    showConfirmButton: false
                 });
+                // handleCloseModal();
             }
         }
 
@@ -119,7 +106,6 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isModelsLoaded, refDescriptor, isWebcamReady, hasVerified, isOpen, isBrowserSupported]);
-    
 
     const verifyFace = useCallback(async () => {
         setHasVerified(true); // Prevent re-verification
@@ -192,8 +178,8 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
 
             // Define detection options
             const detectionOptions = new faceapi.TinyFaceDetectorOptions({
-                inputSize: 1024,
-                scoreThreshold: 0.3,
+                inputSize: 512,
+                scoreThreshold: 0.5,
             });
 
             // Detect face in probe image
@@ -203,19 +189,19 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 .withFaceDescriptor();
 
             if (!probeDetection) {
-                // Swal.fire({
-                //     icon: 'error',
-                //     title: 'ไม่พบใบหน้าในรูปที่ถ่าย',
-                //     text: 'กรุณาถ่ายรูปใหม่ที่มีใบหน้าชัดเจน',
-                //     timer: 1500,
-                //     showConfirmButton: false,
-                //     toast: true,
-                //     position: 'top-end',
-                //     timerProgressBar: true
-                // });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ไม่พบใบหน้าในรูปที่ถ่าย',
+                    text: 'กรุณาถ่ายรูปใหม่ที่มีใบหน้าชัดเจน',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
+                });
                 
-                setHasVerified(false);
-                setCapturedImage(null);
+                setHasVerified(false); // Allow re-verification
+                setCapturedImage(null); // Reset captured image
                 return;
             }
 
@@ -227,11 +213,28 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
 
             const threshold = 0.4; // ลดค่าความคลาดเคลื่อนเพื่อเพิ่มความแม่นยำ
             if (distance < threshold) {
-                setIconState(iconUnlock);
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'ใบหน้าตรงกัน!',
+                    showConfirmButton: false,
+                    timer: 1500,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
+                });
                 handleCloseModal();
                 onSuccess();
             } else {
-                setIconState(iconLock);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ใบหน้าไม่ตรงกัน!',
+                    text: 'กรุณาถ่ายรูปใหม่',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
+                });
                 setHasVerified(false); // Allow re-verification
                 setCapturedImage(null); // Reset captured image
             }
@@ -250,14 +253,6 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
             setHasVerified(false); // Allow re-verification
         }
     }, [refDescriptor, onClose, onSuccess, retryCount]);
-
-    useEffect(() => {
-        if (iconState === iconUnlock) {
-          setTimeout(() => {
-            setIsShaking(false);
-          }, 1500);
-        }
-      }, [iconState]);
 
     const handleUserMedia = () => {
         console.log("Webcam is ready");
@@ -284,7 +279,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     return (
         <div
             className="modal-overlay fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
-            // onClick={handleCloseModal}
+            onClick={handleCloseModal}
         >
             <div
                 className="modal-content bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md !z-10 relative"
@@ -306,25 +301,40 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     <p>กำลังโหลดโมเดลหรือรูปอ้างอิง<span className="loading loading-dots loading-sm"></span></p>
                 ) : (
                     <>
-                        <div className="icon w-5 h-5 mx-auto my-3">{iconState}</div>
                         <Webcam
                             audio={false}
                             ref={webcamRef}
                             screenshotFormat="image/jpeg"
                             videoConstraints={videoConstraints}
                             onUserMedia={handleUserMedia}
+                            onUserMediaError={(error) => {
+                                console.error("Webcam error:", error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'ไม่สามารถเข้าถึงกล้องได้',
+                                    text: 'กรุณาเปิดกล้องใหม่และลองอีกครั้ง',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'เปิดในเว็บเบราว์เซอร์ที่รองรับ',
+                                    cancelButtonText: 'ปิด',
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        openInSupportedBrowser();
+                                    }
+                                });
+                                handleCloseModal();
+                            }}
                             className="mx-auto rounded-md transform scale-x-[-1]"
                             style={{ width: '100%', height: 'auto' }}
                         />
                         <p className="mt-4 text-center">ระบบกำลังตรวจจับใบหน้า...</p>
                     </>
                 ))}
-                {/* <button
+                <button
                     onClick={handleCloseModal}
                     className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
                 >
                     X
-                </button> */}
+                </button>
             </div>
         </div>
     );

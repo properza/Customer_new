@@ -69,32 +69,21 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     useEffect(() => {
         if (!isModelsLoaded || !faceUrl) return;
 
-        const fetchReferenceDescriptor = async () => {
+        async function fetchReferenceDescriptor() {
             try {
                 const refImgElement = await faceapi.fetchImage(faceUrl);
-                // if (!refImgElement) {
-                //     console.warn("Failed to load reference image.");
-                //     Swal.fire({
-                //         icon: 'error',
-                //         title: 'ไม่พบใบหน้าในรูปอ้างอิง1',
-                //         text: 'กรุณาอัปโหลดรูปใบหน้าใหม่ที่มีใบหน้าชัดเจน',
-                //         timer: 1500,
-                //         showConfirmButton: false
-                //     });
-                //     handleCloseModal();
-                //     return;
-                // }
-        
+                setReferenceImage(faceUrl);
+
                 const detectionOptions = new faceapi.TinyFaceDetectorOptions({
                     inputSize: 1024,
                     scoreThreshold: 0.3,
                 });
-        
+
                 const detection = await faceapi
                     .detectSingleFace(refImgElement, detectionOptions)
                     .withFaceLandmarks()
                     .withFaceDescriptor();
-        
+
                 if (detection) {
                     console.log("Reference Face Detected:", detection);
                     setRefDescriptor(detection.descriptor);
@@ -102,7 +91,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     console.warn("No face detected in reference image at URL:", faceUrl);
                     Swal.fire({
                         icon: 'error',
-                        title: 'ไม่พบใบหน้าในรูปอ้างอิง2',
+                        title: 'ไม่พบใบหน้าในรูปอ้างอิง',
                         text: 'กรุณาอัปโหลดรูปใบหน้าใหม่ที่มีใบหน้าชัดเจน',
                         timer: 1500,
                         showConfirmButton: false
@@ -118,9 +107,9 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     timer: 1500,
                     showConfirmButton: false
                 });
-                handleCloseModal();
+                // handleCloseModal();
             }
-        };
+        }
 
         fetchReferenceDescriptor();
     }, [isModelsLoaded, faceUrl, onClose]);

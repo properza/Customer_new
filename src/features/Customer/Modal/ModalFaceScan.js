@@ -75,7 +75,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 setReferenceImage(faceUrl);
 
                 const detectionOptions = new faceapi.TinyFaceDetectorOptions({
-                    inputSize: 1024,
+                    inputSize: 512,
                     scoreThreshold: 0.4,
                 });
 

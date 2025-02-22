@@ -63,7 +63,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             const detections = await faceapi.detectAllFaces(
                 video,
                 new faceapi.TinyFaceDetectorOptions({ 
-                    inputSize: 1024,
+                    inputSize: 512,
                     scoreThreshold: 0.4, })
             );
     

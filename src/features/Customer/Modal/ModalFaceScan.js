@@ -96,7 +96,6 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                         timer:1500,
                         showConfirmButton:false
                     });
-                    handleCloseModal();
                 }
             } catch (error) {
                 console.error("Error fetching reference image descriptor:", error);
@@ -107,7 +106,6 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     timer:1500,
                     showConfirmButton:false
                 });
-                handleCloseModal();
             }
         }
 

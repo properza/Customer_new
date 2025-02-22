@@ -31,7 +31,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     const [isBrowserSupported, setIsBrowserSupported] = useState(true);
     const [iconState, setIconState] = useState(iconLock);
     const [isShaking, setIsShaking] = useState(false); 
-    const maxRetries = 15; // จำนวนครั้งสูงสุดในการลองใหม่
+    const maxRetries = 50; // จำนวนครั้งสูงสุดในการลองใหม่
 
     useEffect(() => {
         async function loadModels() {
@@ -75,7 +75,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 setReferenceImage(faceUrl);
 
                 const detectionOptions = new faceapi.TinyFaceDetectorOptions({
-                    inputSize: 1024,
+                    inputSize: 512,
                     scoreThreshold: 0.5,
                 });
 

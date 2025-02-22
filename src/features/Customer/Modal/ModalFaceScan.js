@@ -195,16 +195,16 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 .withFaceDescriptor();
 
             if (!probeDetection) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'ไม่พบใบหน้าในรูปที่ถ่าย',
-                    text: 'กรุณาถ่ายรูปใหม่ที่มีใบหน้าชัดเจน',
-                    timer: 1500,
-                    showConfirmButton: false,
-                    toast: true,
-                    position: 'top-end',
-                    timerProgressBar: true
-                });
+                // Swal.fire({
+                //     icon: 'error',
+                //     title: 'ไม่พบใบหน้าในรูปที่ถ่าย',
+                //     text: 'กรุณาถ่ายรูปใหม่ที่มีใบหน้าชัดเจน',
+                //     timer: 1500,
+                //     showConfirmButton: false,
+                //     toast: true,
+                //     position: 'top-end',
+                //     timerProgressBar: true
+                // });
                 
                 setHasVerified(false); // Allow re-verification
                 setCapturedImage(null); // Reset captured image
@@ -298,6 +298,12 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 onClick={(e) => e.stopPropagation()}
             >
                 <h2 className="text-lg font-bold mb-4">สแกนใบหน้าเพื่อยืนยัน</h2>
+                {icon && (
+                    <div className={`flex justify-center items-center ${icon === 'success' ? 'text-green-500' : 'text-red-500'}`}>
+                        <i className={`fas fa-${icon} text-4xl`} />
+                        <p className="ml-2">{iconMessage}</p>
+                    </div>
+                )}
                 {!isBrowserSupported ? (
                     <div className="text-center">
                         <p>เบราว์เซอร์ของคุณไม่รองรับการเข้าถึงกล้องสำหรับการยืนยันใบหน้า</p>

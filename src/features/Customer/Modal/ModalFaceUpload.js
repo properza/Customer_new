@@ -64,7 +64,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                 video,
                 new faceapi.TinyFaceDetectorOptions({ 
                     inputSize: 1024,
-                    scoreThreshold: 0.3, })
+                    scoreThreshold: 0.4, })
             );
     
             const resizedDetections = faceapi.resizeResults(detections, displaySize);

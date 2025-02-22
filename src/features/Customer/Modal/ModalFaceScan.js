@@ -8,7 +8,7 @@ const videoConstraints = {
     facingMode: 'user', // กล้องหน้า (mobile)
 };
 
-const iconLock =
+const iconLock = 
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
         <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
     </svg>;
@@ -30,7 +30,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     const [retryCount, setRetryCount] = useState(0);
     const [isBrowserSupported, setIsBrowserSupported] = useState(true);
     const [iconState, setIconState] = useState(iconLock);
-    const [isShaking, setIsShaking] = useState(false);
+    const [isShaking, setIsShaking] = useState(false); 
     const maxRetries = 3; // จำนวนครั้งสูงสุดในการลองใหม่
 
     useEffect(() => {
@@ -71,17 +71,30 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
 
         const fetchReferenceDescriptor = async () => {
             try {
-
+                const refImgElement = await faceapi.fetchImage(faceUrl);
+                if (!refImgElement) {
+                    console.warn("Failed to load reference image.");
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ไม่พบใบหน้าในรูปอ้างอิง1',
+                        text: 'กรุณาอัปโหลดรูปใบหน้าใหม่ที่มีใบหน้าชัดเจน',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    handleCloseModal();
+                    return;
+                }
+        
                 const detectionOptions = new faceapi.TinyFaceDetectorOptions({
                     inputSize: 512,
                     scoreThreshold: 0.5,
                 });
-
+        
                 const detection = await faceapi
                     .detectSingleFace(refImgElement, detectionOptions)
                     .withFaceLandmarks()
                     .withFaceDescriptor();
-
+        
                 if (detection) {
                     console.log("Reference Face Detected:", detection);
                     setRefDescriptor(detection.descriptor);
@@ -119,7 +132,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isModelsLoaded, refDescriptor, isWebcamReady, hasVerified, isOpen, isBrowserSupported]);
-
+    
 
     const verifyFace = useCallback(async () => {
         setHasVerified(true); // Prevent re-verification
@@ -213,7 +226,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 //     position: 'top-end',
                 //     timerProgressBar: true
                 // });
-
+                
                 setHasVerified(false); // Allow re-verification
                 setCapturedImage(null); // Reset captured image
                 return;
@@ -253,11 +266,11 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
 
     useEffect(() => {
         if (iconState === iconUnlock) {
-            setTimeout(() => {
-                setIsShaking(false);
-            }, 1500);
+          setTimeout(() => {
+            setIsShaking(false);
+          }, 1500);
         }
-    }, [iconState]);
+      }, [iconState]);
 
     const handleUserMedia = () => {
         console.log("Webcam is ready");
@@ -284,7 +297,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     return (
         <div
             className="modal-overlay fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
-        // onClick={handleCloseModal}
+            // onClick={handleCloseModal}
         >
             <div
                 className="modal-content bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md !z-10 relative"

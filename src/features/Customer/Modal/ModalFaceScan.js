@@ -148,25 +148,25 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
             console.log("Video width:", video.videoWidth);
             console.log("Video height:", video.videoHeight);
 
-            if (video.videoWidth === 0 || video.videoHeight === 0) {
-                if (retryCount < maxRetries) {
-                    console.warn("Video not ready yet. Dimensions are zero. Retrying in 500ms...");
-                    setTimeout(verifyFace, 500); // Retry after 500ms
-                    setRetryCount(prev => prev + 1);
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'ไม่สามารถเข้าถึงกล้องได้',
-                        text: 'กรุณาเปิดกล้องใหม่และลองอีกครั้ง',
-                        timer: 1500,
-                        showConfirmButton: false,
-                        toast: true,
-                        position: 'top-end',
-                        timerProgressBar: true
-                    });
-                }
-                return;
-            }
+            // if (video.videoWidth === 0 || video.videoHeight === 0) {
+            //     if (retryCount < maxRetries) {
+            //         console.warn("Video not ready yet. Dimensions are zero. Retrying in 500ms...");
+            //         setTimeout(verifyFace, 500); // Retry after 500ms
+            //         setRetryCount(prev => prev + 1);
+            //     } else {
+            //         Swal.fire({
+            //             icon: 'error',
+            //             title: 'ไม่สามารถเข้าถึงกล้องได้',
+            //             text: 'กรุณาเปิดกล้องใหม่และลองอีกครั้ง',
+            //             timer: 1500,
+            //             showConfirmButton: false,
+            //             toast: true,
+            //             position: 'top-end',
+            //             timerProgressBar: true
+            //         });
+            //     }
+            //     return;
+            // }
 
             // Create a canvas to capture the frame
             const canvas = document.createElement('canvas');

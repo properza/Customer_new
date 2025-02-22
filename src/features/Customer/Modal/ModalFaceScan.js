@@ -53,22 +53,24 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
 
     useEffect(() => {
         if (!isModelsLoaded || !faceUrl) return;
-
+    
         async function fetchReferenceDescriptor() {
             try {
-                const refImgElement = await faceapi.fetchImage(faceUrl);
-                setReferenceImage(faceUrl);
-
+                // ตรวจสอบว่า faceUrl เป็น array หรือ string
+                const refImgUrl = Array.isArray(faceUrl) ? faceUrl[0] : faceUrl;
+                const refImgElement = await faceapi.fetchImage(refImgUrl);
+                setReferenceImage(refImgUrl);
+    
                 const detectionOptions = new faceapi.TinyFaceDetectorOptions({
                     inputSize: 512, // ขนาดอินพุตเพื่อเพิ่มความแม่นยำ
                     scoreThreshold: 0.5, // ค่าความไวของการตรวจจับ
                 });
-
+    
                 const detection = await faceapi
                     .detectSingleFace(refImgElement, detectionOptions)
                     .withFaceLandmarks()
                     .withFaceDescriptor();
-
+    
                 if (detection) {
                     console.log("Reference Face Detected:", detection);
                     setRefDescriptor(detection.descriptor);
@@ -92,10 +94,10 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     timer: 1500,
                     showConfirmButton: false
                 });
-                // handleCloseModal();
+                handleCloseModal();
             }
         }
-
+    
         fetchReferenceDescriptor();
     }, [isModelsLoaded, faceUrl, onClose]);
 

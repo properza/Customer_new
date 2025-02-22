@@ -124,16 +124,13 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             img.onload = () => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                // กำหนดขนาดภาพใหม่ตามที่ต้องการ
-                const newWidth = 1920;  // ความกว้างที่ต้องการ
-                const newHeight = 1080; // ความสูงที่ต้องการ
-                canvas.width = newWidth;
-                canvas.height = newHeight;
-                ctx.scale(-1, 1); // สะท้อนภาพ
-                ctx.drawImage(img, 0, 0, newWidth, newHeight); // ปรับขนาดภาพ
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.scale(-1, 1); // สะท้อนแนวนอน
+                ctx.drawImage(img, -img.width, 0);
                 const correctedScreenshot = canvas.toDataURL('image/jpeg');
                 setImageSrc(correctedScreenshot);
-                setCapturedImage(correctedScreenshot);
+                setCapturedImage(correctedScreenshot); // ตั้งค่า capturedImage
                 setCountdown(null); // รีเซ็ตนับถอยหลังหลังถ่ายรูป
             };
         }

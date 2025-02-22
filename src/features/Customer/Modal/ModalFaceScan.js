@@ -229,17 +229,17 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
 
             const threshold = 0.4; // ลดค่าความคลาดเคลื่อนเพื่อเพิ่มความแม่นยำ
             if (distance < threshold) {
-                // await Swal.fire({
-                //     icon: 'success',
-                //     title: 'ใบหน้าตรงกัน!',
-                //     showConfirmButton: false,
-                //     timer: 1500,
-                //     toast: true,
-                //     position: 'top-end',
-                //     timerProgressBar: true
-                // });
-                await setIcon('success');  // แสดงไอคอน success
-                setIconMessage('ใบหน้าตรงกัน!');
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'ยืนยันใบหน้าสำเร็จ!',
+                    showConfirmButton: false,
+                    timer: 1500,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
+                });
+                // await setIcon('success');  // แสดงไอคอน success
+                // setIconMessage('ใบหน้าตรงกัน!');
                 handleCloseModal();
                 onSuccess();
             } else {

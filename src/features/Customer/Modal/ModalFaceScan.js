@@ -93,8 +93,8 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                         icon: 'error',
                         title: 'ไม่พบใบหน้าในรูปอ้างอิง',
                         text: 'กรุณาอัปโหลดรูปใบหน้าใหม่ที่มีใบหน้าชัดเจน',
-                        timer: 1500,
-                        showConfirmButton: false
+                        timer:1500,
+                        showConfirmButton:false
                     });
                     handleCloseModal();
                 }
@@ -104,10 +104,10 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     icon: 'error',
                     title: 'เกิดข้อผิดพลาดในการโหลดรูปอ้างอิง',
                     text: 'กรุณาตรวจสอบ URL หรือ Backend',
-                    timer: 1500,
-                    showConfirmButton: false
+                    timer:1500,
+                    showConfirmButton:false
                 });
-                // handleCloseModal();
+                handleCloseModal();
             }
         }
 
@@ -205,19 +205,19 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 .withFaceDescriptor();
 
             if (!probeDetection) {
-                // Swal.fire({
-                //     icon: 'error',
-                //     title: 'ไม่พบใบหน้าในรูปที่ถ่าย',
-                //     text: 'กรุณาถ่ายรูปใหม่ที่มีใบหน้าชัดเจน',
-                //     timer: 1500,
-                //     showConfirmButton: false,
-                //     toast: true,
-                //     position: 'top-end',
-                //     timerProgressBar: true
-                // });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ไม่พบใบหน้าในรูปที่ถ่าย',
+                    text: 'กรุณาถ่ายรูปใหม่ที่มีใบหน้าชัดเจน',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
+                });
                 
-                setHasVerified(false); // Allow re-verification
-                setCapturedImage(null); // Reset captured image
+                setHasVerified(false);
+                setCapturedImage(null);
                 return;
             }
 

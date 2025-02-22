@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import * as faceapi from 'face-api.js';
 import Swal from 'sweetalert2';
+import 'font-awesome/css/font-awesome.min.css';
 
 const videoConstraints = {
     facingMode: 'user', // กล้องหน้า (mobile)
@@ -57,24 +58,24 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
 
     useEffect(() => {
         if (!isModelsLoaded || !faceUrl) return;
-    
+
         async function fetchReferenceDescriptor() {
             try {
                 // ตรวจสอบว่า faceUrl เป็น array หรือ string
                 const refImgUrl = Array.isArray(faceUrl) ? faceUrl[0] : faceUrl;
                 const refImgElement = await faceapi.fetchImage(refImgUrl);
                 setReferenceImage(refImgUrl);
-    
+
                 const detectionOptions = new faceapi.TinyFaceDetectorOptions({
                     inputSize: 512, // ขนาดอินพุตเพื่อเพิ่มความแม่นยำ
                     scoreThreshold: 0.5, // ค่าความไวของการตรวจจับ
                 });
-    
+
                 const detection = await faceapi
                     .detectSingleFace(refImgElement, detectionOptions)
                     .withFaceLandmarks()
                     .withFaceDescriptor();
-    
+
                 if (detection) {
                     console.log("Reference Face Detected:", detection);
                     setRefDescriptor(detection.descriptor);
@@ -101,7 +102,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 handleCloseModal();
             }
         }
-    
+
         fetchReferenceDescriptor();
     }, [isModelsLoaded, faceUrl, onClose]);
 
@@ -205,7 +206,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 //     position: 'top-end',
                 //     timerProgressBar: true
                 // });
-                
+
                 setHasVerified(false); // Allow re-verification
                 setCapturedImage(null); // Reset captured image
                 return;
@@ -291,7 +292,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     return (
         <div
             className="modal-overlay fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
-            onClick={handleCloseModal}
+        // onClick={handleCloseModal}
         >
             <div
                 className="modal-content bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md !z-10 relative"
@@ -300,10 +301,11 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 <h2 className="text-lg font-bold mb-4">สแกนใบหน้าเพื่อยืนยัน</h2>
                 {icon && (
                     <div className={`flex justify-center items-center ${icon === 'success' ? 'text-green-500' : 'text-red-500'}`}>
-                        <i className={`fas fa-${icon} text-4xl`} />
+                        <i className={`fas fa-${icon === 'success' ? 'check-circle' : 'times-circle'} text-4xl`} />
                         <p className="ml-2">{iconMessage}</p>
                     </div>
                 )}
+
                 {!isBrowserSupported ? (
                     <div className="text-center">
                         <p>เบราว์เซอร์ของคุณไม่รองรับการเข้าถึงกล้องสำหรับการยืนยันใบหน้า</p>
@@ -347,12 +349,12 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                         <p className="mt-4 text-center">ระบบกำลังตรวจจับใบหน้า...</p>
                     </>
                 ))}
-                <button
+                {/* <button
                     onClick={handleCloseModal}
                     className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
                 >
                     X
-                </button>
+                </button> */}
             </div>
         </div>
     );

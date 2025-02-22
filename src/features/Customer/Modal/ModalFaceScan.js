@@ -8,6 +8,15 @@ const videoConstraints = {
     facingMode: 'user', // กล้องหน้า (mobile)
 };
 
+const passIcon = <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+</svg>
+;
+const UnpassIcon = <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+    <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+</svg>
+;
+
 function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     const webcamRef = useRef(null);
     const [isModelsLoaded, setIsModelsLoaded] = useState(false);
@@ -300,8 +309,8 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
             >
                 <h2 className="text-lg font-bold mb-4">สแกนใบหน้าเพื่อยืนยัน</h2>
                 {icon && (
-                    <div className={`flex justify-center items-center ${icon === 'success' ? 'text-green-500' : 'text-red-500'}`}>
-                        <i className={`fas fa-${icon === 'success' ? 'check-circle' : 'times-circle'} text-4xl`} />
+                    <div className={`flex justify-center flex-col gap-1 items-center ${icon === 'success' ? 'text-green-500' : 'text-red-500'}`}>
+                        <div className="w-6 h-6">{icon === 'success' ? passIcon : UnpassIcon }</div>
                         <p className="ml-2">{iconMessage}</p>
                     </div>
                 )}

@@ -164,7 +164,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
     useEffect(() => {
         let timer;
         if (status === 'ใช้ได้') {
-            setCountdown(3); // เริ่มนับถอยหลัง 3 วินาที
+            setCountdown(2); // เริ่มนับถอยหลัง 3 วินาที
             timer = setInterval(() => {
                 setCountdown((prev) => {
                     if (prev > 1) return prev - 1;

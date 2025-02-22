@@ -3,7 +3,9 @@ import Webcam from 'react-webcam';
 import * as faceapi from 'face-api.js';
 
 const videoConstraints = {
-    facingMode: 'user', // กล้องหน้า (mobile)
+    facingMode: 'user',
+    width: { ideal: 1280 },
+    height: { ideal: 720 }
 };
 
 function dataURLtoFile(dataURL, fileName) {
@@ -53,23 +55,26 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
         const canvas = canvasRef.current;
         const displaySize = { width: video.videoWidth, height: video.videoHeight };
         faceapi.matchDimensions(canvas, displaySize);
-    
+
         const interval = setInterval(async () => {
             if (video.paused || video.ended) {
                 clearInterval(interval);
                 return;
             }
-    
+
             const detections = await faceapi.detectAllFaces(
                 video,
-                new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 })
+                new faceapi.TinyFaceDetectorOptions({
+                    inputSize: 640,
+                    scoreThreshold: 0.5,
+                })
             );
-    
+
             const resizedDetections = faceapi.resizeResults(detections, displaySize);
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             faceapi.draw.drawDetections(canvas, resizedDetections);
-    
+
             if (detections.length === 1) {
                 const isClear = await isImageClear(video);
                 setStatus(isClear ? 'ใช้ได้' : 'ไม่ใช้ได้');
@@ -77,7 +82,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                 setStatus('ไม่พบใบหน้าหรือพบมากกว่า 1 ใบหน้า');
             }
         }, 500);
-    
+
         return () => clearInterval(interval);
     }, []);
 
@@ -89,28 +94,28 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
+
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const data = imageData.data;
             let variance = 0;
             let mean = 0;
             const len = data.length;
-    
+
             // คำนวณค่าเฉลี่ยสี
             for (let i = 0; i < len; i += 4) {
                 const gray = 0.2989 * data[i] + 0.5870 * data[i + 1] + 0.1140 * data[i + 2];
                 mean += gray;
             }
             mean /= len / 4;
-    
+
             // คำนวณความแปรผันของสี
             for (let i = 0; i < len; i += 4) {
                 const gray = 0.2989 * data[i] + 0.5870 * data[i + 1] + 0.1140 * data[i + 2];
                 variance += Math.pow(gray - mean, 2);
             }
             variance /= len / 4;
-    
-            const BLUR_THRESHOLD = 100; // ปรับเกณฑ์ให้ตรวจจับได้ชัดเจนขึ้น
+
+            const BLUR_THRESHOLD = 150; // ปรับเกณฑ์ให้ตรวจจับได้ชัดเจนขึ้น
             resolve(variance > BLUR_THRESHOLD);
         });
     };
@@ -124,14 +129,16 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             img.onload = () => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.scale(-1, 1); // สะท้อนแนวนอน
-                ctx.drawImage(img, -img.width, 0);
-                const correctedScreenshot = canvas.toDataURL('image/jpeg');
+                const scaleFactor = 2;
+                canvas.width = img.width * scaleFactor;
+                canvas.height = img.height * scaleFactor;
+                ctx.scale(scaleFactor, scaleFactor);
+                ctx.drawImage(img, 0, 0);
+                const correctedScreenshot = canvas.toDataURL('image/jpeg', 0.9);
                 setImageSrc(correctedScreenshot);
-                setCapturedImage(correctedScreenshot); // ตั้งค่า capturedImage
-                setCountdown(null); // รีเซ็ตนับถอยหลังหลังถ่ายรูป
+                setImageSrc(correctedScreenshot);
+                setCapturedImage(correctedScreenshot);
+                setCountdown(null);
             };
         }
         setIsSubmitting(false);
@@ -186,7 +193,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
     return (
         <div
             className="modal-overlay fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
-            // onClick={onClose}
+        // onClick={onClose}
         >
             <div
                 className="modal-content bg-white p-4 rounded-lg shadow-lg w-[90%] max-w-md relative"
@@ -201,7 +208,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                             <Webcam
                                 audio={false}
                                 ref={webcamRef}
-                                screenshotFormat="image/jpeg"
+                                screenshotFormat="image/png"
                                 videoConstraints={videoConstraints}
                                 className="mx-auto rounded-md transform scale-x-[-1]" // สะท้อนภาพ
                                 onPlay={handleVideoOnPlay}

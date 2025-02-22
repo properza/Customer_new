@@ -17,6 +17,8 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
     const [referenceImage, setReferenceImage] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
     const [isBrowserSupported, setIsBrowserSupported] = useState(true);
+    const [icon, setIcon] = useState(null); // state สำหรับการแสดงไอคอน
+    const [iconMessage, setIconMessage] = useState(''); // ข้อความที่จะแสดง
     const maxRetries = 50; // จำนวนครั้งสูงสุดในการลองใหม่
 
     useEffect(() => {
@@ -31,6 +33,8 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 console.log("face-api models loaded successfully");
             } catch (error) {
                 console.error("Error loading face-api models:", error);
+                setIcon('error');  // แสดงไอคอน error
+                setIconMessage('เกิดข้อผิดพลาดในการโหลดโมเดล');
                 Swal.fire({
                     icon: 'error',
                     title: 'เกิดข้อผิดพลาดในการโหลดโมเดล',
@@ -215,28 +219,32 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
 
             const threshold = 0.4; // ลดค่าความคลาดเคลื่อนเพื่อเพิ่มความแม่นยำ
             if (distance < threshold) {
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'ใบหน้าตรงกัน!',
-                    showConfirmButton: false,
-                    timer: 1500,
-                    toast: true,
-                    position: 'top-end',
-                    timerProgressBar: true
-                });
+                // await Swal.fire({
+                //     icon: 'success',
+                //     title: 'ใบหน้าตรงกัน!',
+                //     showConfirmButton: false,
+                //     timer: 1500,
+                //     toast: true,
+                //     position: 'top-end',
+                //     timerProgressBar: true
+                // });
+                setIcon('success');  // แสดงไอคอน success
+                setIconMessage('ใบหน้าตรงกัน!');
                 handleCloseModal();
                 onSuccess();
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'ใบหน้าไม่ตรงกัน!',
-                    text: 'กรุณาถ่ายรูปใหม่',
-                    timer: 1500,
-                    showConfirmButton: false,
-                    toast: true,
-                    position: 'top-end',
-                    timerProgressBar: true
-                });
+                // Swal.fire({
+                //     icon: 'error',
+                //     title: 'ใบหน้าไม่ตรงกัน!',
+                //     text: 'กรุณาถ่ายรูปใหม่',
+                //     timer: 1500,
+                //     showConfirmButton: false,
+                //     toast: true,
+                //     position: 'top-end',
+                //     timerProgressBar: true
+                // });
+                setIcon('error');  // แสดงไอคอน error
+                setIconMessage('ใบหน้าไม่ตรงกัน! กรุณาถ่ายรูปใหม่');
                 setHasVerified(false); // Allow re-verification
                 setCapturedImage(null); // Reset captured image
             }
@@ -268,6 +276,8 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
         setHasVerified(false);
         setCapturedImage(null);
         setReferenceImage(null);
+        setIcon(null);  // รีเซ็ตไอคอน
+        setIconMessage(''); // รีเซ็ตข้อความ
     };
 
     // ฟังก์ชันสำหรับเปิดแท็บใหม่ในเว็บเบราว์เซอร์ที่รองรับ

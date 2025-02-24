@@ -744,8 +744,8 @@ export default function Customer() {
                                                     <td className="border px-4 py-2">{activity.activityName}</td>
                                                     <td className="border px-4 py-2">{customerinfo?.st_tpye}</td>
                                                     <td className="border px-4 py-2">{activity.status}</td> {/* กำลังเข้าร่วม เข้าร่วมสำเร็จ เข้าร่วมไม่สำเร็จ */}
-                                                    <td className="border px-4 py-2">
-                                                        {Array.isArray(activity.pointsEarned) ? activity.pointsEarned.join('/') : 'ไม่มีข้อมูล'}
+                                                    <td className="border px-4 py-2 text-center">
+                                                        {Array.isArray(activity.pointsEarned) ? activity.pointsEarned.join(' / ') : '0'}
                                                     </td>
 
                                                     <td className="border px-4 py-2">

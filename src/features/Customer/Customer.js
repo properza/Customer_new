@@ -731,7 +731,7 @@ export default function Customer() {
                                             <th className="border px-4 py-2">กิจกรรม</th>
                                             <th className="border px-4 py-2">ประเภทกิจกรรม</th>
                                             <th className="border px-4 py-2">การเข้าร่วม</th>
-                                            <th className="border px-4 py-2">เวลาเข้าร่วม</th>
+                                            <th className="border px-4 py-2">เวลาเข้าร่วม (ชม.)</th>
                                             <th className="border px-4 py-2">รายละเอียด</th>
                                         </tr>
                                     </thead>

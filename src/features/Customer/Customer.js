@@ -4,12 +4,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import ReactPaginate from 'react-paginate';
 import Top from './Top';
 import TitleCard from '../../components/Cards/TitleCard';
-import { loginWithLine, resetState, 
-         updateinfo, gethistory, upFaceurl, 
-         signin, getrewarddata, gethistoryreward, 
-         redeemReward, usedRewards, getCloud, 
-         uploadEventData, uploadspecialData, getscroesData, 
-         getspecialEvent 
+import {
+    loginWithLine, resetState,
+    updateinfo, gethistory, upFaceurl,
+    signin, getrewarddata, gethistoryreward,
+    redeemReward, usedRewards, getCloud,
+    uploadEventData, uploadspecialData, getscroesData,
+    getspecialEvent
 } from '../common/userSlice';
 import classNames from 'classnames';
 import Modal from './Modal/Modal';
@@ -75,7 +76,7 @@ export default function Customer() {
                 showConfirmButton: false,
             });
             return;
-        }  
+        }
 
         const newImages = files.map(file => ({
             file,
@@ -198,7 +199,7 @@ export default function Customer() {
         loadModels().then(() => console.log("Models loaded"));
     }, []);
 
-    
+
 
     useEffect(() => {
         dispatch(loginWithLine());
@@ -246,7 +247,7 @@ export default function Customer() {
         setIsFaceScanModalOpen(false);
         setModalRegister(false);
     };
-    
+
     const [selectedScoresId, setselectedScoresId] = useState(0);
 
     const handleBarcodeClick = (rewardId) => {
@@ -719,7 +720,7 @@ export default function Customer() {
                     <TitleCard title={'ประวัติกิจกรรม'} title2={`ทั้งหมด ${(activebtn === 'history' && activebtn2 === 'history') ? historyData.meta?.total || 0 : Cloud.meta?.total || 0} รายการ`} topMargin={'mt-1'}>
                         <div className="flex gap-2 mt-[-1rem] mb-2">
                             <button className={`${(activebtn === 'history' && activebtn2 === 'history') ? 'active' : ''}`} onClick={() => setactivebtn2('history')}>ประวัติกิจกรรม</button>
-                            <button className={`${activebtn2 === 'specialHS' ? 'active' : ''}`} onClick={() => setactivebtn2('specialHS')}> {customerinfo?.st_tpye !== 'กยศ.' ? 'กิจกรรมพิเศษ' : 'กิจกรรมจิตอาสา' }</button>
+                            <button className={`${activebtn2 === 'specialHS' ? 'active' : ''}`} onClick={() => setactivebtn2('specialHS')}> {customerinfo?.st_tpye !== 'กยศ.' ? 'กิจกรรมพิเศษ' : 'กิจกรรมจิตอาสา'}</button>
                         </div>
                         {(activebtn === 'history' && activebtn2 === 'history') ?
                             <div className="overflow-auto h-[45vh]">
@@ -742,8 +743,11 @@ export default function Customer() {
                                                     <td className="border px-4 py-2">{index + 1}</td>
                                                     <td className="border px-4 py-2">{activity.activityName}</td>
                                                     <td className="border px-4 py-2">{customerinfo?.st_tpye}</td>
-                                                    <td className="border px-4 py-2">{activity.created_at ? format(new Date(activity.created_at), "d MMM yyyy HH:mm", { locale: th }) : activity.status}</td>
-                                                    <td className="border px-4 py-2">{convertPointsToTime(activity.pointsEarned)}</td>
+                                                    <td className="border px-4 py-2">{activity.status}</td> {/* กำลังเข้าร่วม เข้าร่วมสำเร็จ เข้าร่วมไม่สำเร็จ */}
+                                                    <td className="border px-4 py-2">
+                                                        {Array.isArray(activity.pointsEarned) ? activity.pointsEarned.join('/') : 'ไม่มีข้อมูล'}
+                                                    </td>
+
                                                     <td className="border px-4 py-2">
                                                         <button
                                                             className='flex justify-center w-full cursor-pointer'
@@ -790,60 +794,60 @@ export default function Customer() {
                             <div className="overflow-auto h-[45vh]">
                                 <table className='table w-full border-collapse border border-gray-200'>
                                     <thead className='bg-[#F7D4E8]'>
-                                    {customerinfo?.st_tpye !== "กยศ." ?<>
-                                        <tr>
-                                            <th className="border px-4 py-2">ลำดับ</th>
-                                            <th className="border px-4 py-2">กิจกรรม</th>
-                                            <th className="border px-4 py-2">วันที่สร้าง</th>
-                                            <th className="border px-4 py-2">รูปภาพ</th>
-                                        </tr>
-                                        </> 
-                                        : <>
-                                        <tr>
-                                            <th className="border px-4 py-2">ลำดับ</th>
-                                            <th className="border px-4 py-2">กิจกรรม</th>
-                                            <th className="border px-4 py-2">ประเภท</th>
-                                            <th className="border px-4 py-2">วันที่สร้าง</th>
-                                            <th className="border px-4 py-2">รูปภาพ</th>
-                                            <th className="border px-4 py-2">สถานะ</th>
-                                        </tr>
-                                        </>}
+                                        {customerinfo?.st_tpye !== "กยศ." ? <>
+                                            <tr>
+                                                <th className="border px-4 py-2">ลำดับ</th>
+                                                <th className="border px-4 py-2">กิจกรรม</th>
+                                                <th className="border px-4 py-2">วันที่สร้าง</th>
+                                                <th className="border px-4 py-2">รูปภาพ</th>
+                                            </tr>
+                                        </>
+                                            : <>
+                                                <tr>
+                                                    <th className="border px-4 py-2">ลำดับ</th>
+                                                    <th className="border px-4 py-2">กิจกรรม</th>
+                                                    <th className="border px-4 py-2">ประเภท</th>
+                                                    <th className="border px-4 py-2">วันที่สร้าง</th>
+                                                    <th className="border px-4 py-2">รูปภาพ</th>
+                                                    <th className="border px-4 py-2">สถานะ</th>
+                                                </tr>
+                                            </>}
                                     </thead>
                                     <tbody>
                                         {customerinfo?.st_tpye !== "กยศ." ? <>
-                                        {/* Replace with dynamic data */}
-                                        {Cloud.data ?
-                                            Cloud.data?.map((activity, index) => (
-                                                <tr key={activity.id}>
-                                                    <td className="border px-4 py-2">{index + 1}</td>
-                                                    <td className="border px-4 py-2">{activity.event_name}</td>
-                                                    <td className="border px-4 py-2">{activity.created_at ? format(new Date(activity.created_at), "d MMM yyyy HH:mm", { locale: th }) : activity.status}</td>
-                                                    <td className="border px-4 py-2" onClick={() => handleImageClick(activity.images, 0)}> <div className="w-6 h-6">{image}</div></td>
+                                            {/* Replace with dynamic data */}
+                                            {Cloud.data ?
+                                                Cloud.data?.map((activity, index) => (
+                                                    <tr key={activity.id}>
+                                                        <td className="border px-4 py-2">{index + 1}</td>
+                                                        <td className="border px-4 py-2">{activity.event_name}</td>
+                                                        <td className="border px-4 py-2">{activity.created_at ? format(new Date(activity.created_at), "d MMM yyyy HH:mm", { locale: th }) : activity.status}</td>
+                                                        <td className="border px-4 py-2" onClick={() => handleImageClick(activity.images, 0)}> <div className="w-6 h-6">{image}</div></td>
+                                                    </tr>
+                                                )) :
+                                                <tr>
+                                                    <td colSpan="5" className="text-center py-4">ไม่มีข้อมูล</td>
                                                 </tr>
-                                            )) :
-                                            <tr>
-                                                <td colSpan="5" className="text-center py-4">ไม่มีข้อมูล</td>
-                                            </tr>
-                                        }</> : <>
-                                        {specialEvent.data ?
-                                            specialEvent.data?.map((activity, index) => (
-                                                <tr key={activity.id}>
-                                                    <td className="border px-4 py-2">{index + 1}</td>
-                                                    <td className="border px-4 py-2">{activity.event_name}</td>
-                                                    <td className="border px-4 py-2">{activity.scores_type}</td>
-                                                    <td className="border px-4 py-2">{activity.created_at ? format(new Date(activity.created_at), "d MMM yyyy HH:mm", { locale: th }) : activity.status}</td>
-                                                    <td className="border px-4 py-2" onClick={() => handleImageClick(activity.images, 0)}> <div className="w-6 h-6">{image}</div></td>
-                                                    <td className="border px-4 py-2 whitespace-nowrap text-center">{activity.status === 'อนุมัติ' ? <p className='p-1 rounded bg-green-500 text-white'>{activity.status}</p>:activity.status === 'รอดำเนินการ' ? <p className='p-1 rounded bg-orange-400 text-white'>{activity.status}</p> : <p className='p-1 rounded bg-red-400 text-white'>{activity.status}</p>}</td>
+                                            }</> : <>
+                                            {specialEvent.data ?
+                                                specialEvent.data?.map((activity, index) => (
+                                                    <tr key={activity.id}>
+                                                        <td className="border px-4 py-2">{index + 1}</td>
+                                                        <td className="border px-4 py-2">{activity.event_name}</td>
+                                                        <td className="border px-4 py-2">{activity.scores_type}</td>
+                                                        <td className="border px-4 py-2">{activity.created_at ? format(new Date(activity.created_at), "d MMM yyyy HH:mm", { locale: th }) : activity.status}</td>
+                                                        <td className="border px-4 py-2" onClick={() => handleImageClick(activity.images, 0)}> <div className="w-6 h-6">{image}</div></td>
+                                                        <td className="border px-4 py-2 whitespace-nowrap text-center">{activity.status === 'อนุมัติ' ? <p className='p-1 rounded bg-green-500 text-white'>{activity.status}</p> : activity.status === 'รอดำเนินการ' ? <p className='p-1 rounded bg-orange-400 text-white'>{activity.status}</p> : <p className='p-1 rounded bg-red-400 text-white'>{activity.status}</p>}</td>
+                                                    </tr>
+                                                )) :
+                                                <tr>
+                                                    <td colSpan="5" className="text-center py-4">ไม่มีข้อมูล</td>
                                                 </tr>
-                                            )) :
-                                            <tr>
-                                                <td colSpan="5" className="text-center py-4">ไม่มีข้อมูล</td>
-                                            </tr>
-                                        }
+                                            }
                                         </>}
                                     </tbody>
                                 </table>
-                                {customerinfo?.st_tpye !== "กยศ." ?<>
+                                {customerinfo?.st_tpye !== "กยศ." ? <>
                                     {Cloud.meta?.total >= 10 &&
                                         <div className="flex justify-end mt-10">
                                             <ReactPaginate
@@ -868,31 +872,31 @@ export default function Customer() {
                                             />
                                         </div>
                                     }</>
-                                :
-                                <>{specialEvent.meta?.total >= 10 &&
-                                    <div className="flex justify-end mt-10">
-                                        <ReactPaginate
-                                            previousLabel={"<"}
-                                            nextLabel={">"}
-                                            breakLabel={"..."}
-                                            pageCount={specialEvent.meta?.last_page || 1}
-                                            marginPagesDisplayed={2}
-                                            pageRangeDisplayed={3}
-                                            onPageChange={handlePageChange}
-                                            containerClassName={"pagination"}
-                                            activeClassName={"active"}
-                                            breakClassName={"page-item"}
-                                            breakLinkClassName={"page-link"}
-                                            pageClassName={"page-item"}
-                                            pageLinkClassName={"page-link"}
-                                            previousClassName={"page-item"}
-                                            previousLinkClassName={"page-link"}
-                                            nextClassName={"page-item"}
-                                            nextLinkClassName={"page-link"}
-                                            disabledClassName={"disabled"}
-                                        />
-                                    </div>
-                                }</>}
+                                    :
+                                    <>{specialEvent.meta?.total >= 10 &&
+                                        <div className="flex justify-end mt-10">
+                                            <ReactPaginate
+                                                previousLabel={"<"}
+                                                nextLabel={">"}
+                                                breakLabel={"..."}
+                                                pageCount={specialEvent.meta?.last_page || 1}
+                                                marginPagesDisplayed={2}
+                                                pageRangeDisplayed={3}
+                                                onPageChange={handlePageChange}
+                                                containerClassName={"pagination"}
+                                                activeClassName={"active"}
+                                                breakClassName={"page-item"}
+                                                breakLinkClassName={"page-link"}
+                                                pageClassName={"page-item"}
+                                                pageLinkClassName={"page-link"}
+                                                previousClassName={"page-item"}
+                                                previousLinkClassName={"page-link"}
+                                                nextClassName={"page-item"}
+                                                nextLinkClassName={"page-link"}
+                                                disabledClassName={"disabled"}
+                                            />
+                                        </div>
+                                    }</>}
                             </div>
 
                         }
@@ -1101,7 +1105,7 @@ export default function Customer() {
 
                 <Modal isOpen={isSpecialActivityModalOpen} onClose={() => setIsSpecialActivityModalOpen(false)}>
                     <div className="p-4">
-                        <h2 className="text-lg font-bold mb-4"> {customerinfo?.st_tpye === "กยศ." ?'กิจกรรมจิตอาสา':'กิจกรรมพิเศษ'}</h2>
+                        <h2 className="text-lg font-bold mb-4"> {customerinfo?.st_tpye === "กยศ." ? 'กิจกรรมจิตอาสา' : 'กิจกรรมพิเศษ'}</h2>
 
                         {/* ฟอร์มกรอกชื่อกิจกรรม */}
                         <input
@@ -1112,22 +1116,22 @@ export default function Customer() {
                             className="w-full p-2 mb-4 border border-gray-300 rounded"
                         />
                         {customerinfo?.st_tpye === "กยศ." &&
-                        <div className='mb-4'>
-                            <label htmlFor="scoreSelect">เลือกประเภท:</label>
-                            <select
-                                id="scoreSelect"
-                                value={selectedScoresId}
-                                onChange={(e) => setselectedScoresId(e.target.value)}
-                                className="w-full p-2 border border-gray-300 rounded max-w-xs overflow-ellipsis"
-                            >
-                                <option value="">กรุณาเลือกกิจกรรม</option>
-                                {scroesData.data.map((score) => (
-                                    <option key={score.id} value={score.id} className='max-w-xs overflow-ellipsis'>
-                                        ประเภทที่ {score.type} {score.name_type}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>}
+                            <div className='mb-4'>
+                                <label htmlFor="scoreSelect">เลือกประเภท:</label>
+                                <select
+                                    id="scoreSelect"
+                                    value={selectedScoresId}
+                                    onChange={(e) => setselectedScoresId(e.target.value)}
+                                    className="w-full p-2 border border-gray-300 rounded max-w-xs overflow-ellipsis"
+                                >
+                                    <option value="">กรุณาเลือกกิจกรรม</option>
+                                    {scroesData.data.map((score) => (
+                                        <option key={score.id} value={score.id} className='max-w-xs overflow-ellipsis'>
+                                            ประเภทที่ {score.type} {score.name_type}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>}
 
                         {/* อัปโหลดรูปภาพ */}
                         <input

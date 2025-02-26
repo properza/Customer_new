@@ -25,6 +25,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { loadModels } from './Modal/utils/faceApi';
 import Barcode from 'react-barcode';
 import './sty.css'
+import Webcam from 'react-webcam';
 
 export default function Customer() {
     const { profile, customerinfo, isLoading, error } = useSelector((state) => state.user);
@@ -49,6 +50,9 @@ export default function Customer() {
     const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
     const [isFaceScanModalOpen, setIsFaceScanModalOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+
+    const webcamRef = useRef(null);
+    const [isFrontCamera, setIsFrontCamera] = useState(true);
     const [selectedImages, setSelectedImages] = useState([]);
 
     const [isSpecialActivityModalOpen, setIsSpecialActivityModalOpen] = useState(false);
@@ -57,6 +61,8 @@ export default function Customer() {
 
     const [selectedRewardId, setSelectedRewardId] = useState(null);
     const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false);
+
+
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -359,6 +365,38 @@ export default function Customer() {
         });
     };
 
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
+
+    const videoConstraints = {
+        facingMode: isFrontCamera ? "user" : "environment", // เปลี่ยนค่าเป็น "user" สำหรับกล้องหน้า และ "environment" สำหรับกล้องหลัง
+    };
+
+    // ฟังก์ชันถ่ายภาพ
+    const captureImage = () => {
+        const imageSrc = webcamRef.current.getScreenshot();
+        setSelectedImages(prevImages => [
+            ...prevImages,
+            { preview: imageSrc } // เก็บภาพใหม่ใน selectedImages
+        ]);
+        stopCamera();
+    };
+
+    // ฟังก์ชันเปิดกล้อง
+    const startCamera = () => {
+        setIsCameraOpen(true);
+    };
+
+    // ฟังก์ชันปิดกล้อง
+    const stopCamera = () => {
+        setIsCameraOpen(false);
+    };
+
+    // ฟังก์ชันสลับกล้อง
+    const toggleCamera = () => {
+        setIsFrontCamera(prevState => !prevState); // สลับสถานะกล้องหน้า/หลัง
+    };
+
+
     const handleFileChange = (event) => {
         const files = Array.from(event.target.files);
         const newImages = files.map((file) => ({
@@ -382,6 +420,21 @@ export default function Customer() {
         });
     };
 
+    const base64ToFile = (base64String, fileName) => {
+        const byteString = atob(base64String.split(',')[1]); // แยกส่วน base64
+        const mimeString = base64String.split(',')[0].split(':')[1].split(';')[0]; // รับประเภท MIME
+    
+        // สร้าง Uint8Array เพื่อเก็บข้อมูล byte
+        const arrayBuffer = new ArrayBuffer(byteString.length);
+        const uintArray = new Uint8Array(arrayBuffer);
+        for (let i = 0; i < byteString.length; i++) {
+            uintArray[i] = byteString.charCodeAt(i);
+        }
+    
+        // แปลงเป็น File object
+        return new File([uintArray], fileName, { type: mimeString });
+    };
+
     const handleAcceptReferral = async () => {
         if (!selectedImages || selectedImages.length === 0) {
             Swal.fire({
@@ -400,8 +453,11 @@ export default function Customer() {
 
         let hasValidFile = false; // ตรวจสอบว่ามีไฟล์ที่ถูกต้องหรือไม่
         selectedImages.forEach((img, index) => {
-            if (img.file instanceof File) {
-                formData.append("images", img.file);
+            // เช็คว่า img.preview เป็น base64 string
+            if (img.preview && img.preview.startsWith('data:image')) {
+                // แปลง base64 เป็น File
+                const file = base64ToFile(img.preview, `image_${index + 1}.png`);
+                formData.append("images", file);
                 hasValidFile = true;
             } else {
                 console.warn(`⚠️ รูปที่ ${index + 1} ไม่มีไฟล์ที่ถูกต้อง`, img);
@@ -450,8 +506,8 @@ export default function Customer() {
             }).then(() => {
                 setIsFaceUploadModalOpen(false);
                 dispatch(loginWithLine());
-                setReferral(null);
-                navigate(location.pathname, { replace: true });
+                // setReferral(null);
+                // navigate(location.pathname, { replace: true });
                 // window.location.reload();
                 handleDeclineReferral();
             });
@@ -483,6 +539,8 @@ export default function Customer() {
     const handleDeclineReferral = () => {
         setIsReferralModalOpen(false);
         setReferral(null); // รีเซ็ต referralCode
+        navigate(location.pathname, { replace: true });
+        // handleDeclineReferral();
     };
 
     const handleActivityClick = (activity) => {
@@ -636,6 +694,19 @@ export default function Customer() {
         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
         <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z" />
     </svg>;
+
+    const CloseCamera = <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>;
+    const capturePic = <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+    </svg>
+        ;
+    const switchCamera = <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+    </svg>;
+
 
 
     return (
@@ -1030,15 +1101,41 @@ export default function Customer() {
                         <p>คุณได้รับคำเชิญให้เข้าร่วมกิจกรรมผ่าน referral: <strong>{referral}</strong></p>
 
                         {/* Input Upload รูป */}
-                        <input
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            onChange={handleFileChange}
-                            className="mt-4 block w-full text-sm text-gray-700 file:mr-2 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-500 file:text-white hover:file:bg-blue-600"
-                        />
+                        {!isCameraOpen ? (
+                            <button
+                                onClick={startCamera}
+                                className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                            >
+                                เปิดกล้อง
+                            </button>
+                        ) : (
+                            <div>
+                                <Webcam
+                                    audio={false}
+                                    ref={webcamRef}
+                                    screenshotFormat="image/png"
+                                    videoConstraints={videoConstraints}
+                                    className={`mx-auto rounded-md transform ${isFrontCamera ? 'scale-x-[-1]' : 'scale-x-[1]'} `}
+                                />
+                                <div className="grid grid-cols-3 justify-center gap-2 items-center text-center mt-2">
+                                    <div className=""></div>
+                                    <button
+                                        onClick={captureImage}
+                                        className="bg-green-500 mx-auto p-2 w-10 h-10 rounded-md"
+                                    >
+                                        {capturePic}
+                                    </button>
+                                    <button
+                                        onClick={toggleCamera}
+                                        className="bg-yellow-500 mx-auto p-2 w-10 h-10 rounded-md"
+                                    >
+                                        {switchCamera}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
-                        {/* แสดงตัวอย่างรูปที่อัปโหลด */}
+                        {/* แสดงภาพที่ถ่ายทั้งหมด */}
                         {selectedImages.length > 0 && (
                             <div className="mt-4 grid grid-cols-3 gap-2">
                                 {selectedImages.map((img, index) => (
@@ -1047,11 +1144,11 @@ export default function Customer() {
                                             src={img.preview}
                                             alt="Uploaded"
                                             className="w-full h-24 object-cover rounded cursor-pointer"
-                                            onClick={() => handlePreviewImage(img.preview)}
+                                            onClick={() => handlePreviewImage(img.preview)} // คลิกเพื่อดูภาพ
                                         />
                                         <button
                                             className="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-1 rounded-full"
-                                            onClick={() => handleRemoveImage(index)}
+                                            onClick={() => handleRemoveImage(index)} // ลบรูป
                                         >
                                             ✕
                                         </button>
@@ -1059,21 +1156,24 @@ export default function Customer() {
                                 ))}
                             </div>
                         )}
-                        <div className="flex justify-end gap-2 mt-4">
-                            <button
-                                onClick={handleDeclineReferral}
-                                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md"
-                            >
-                                ปฏิเสธ
-                            </button>
-                            <button
-                                onClick={() => handleAcceptReferral(referral)}
-                                className="bg-green-500 text-white px-4 py-2 rounded-md"
-                                disabled={isUploading}
-                            >
-                                {isUploading ? "กำลังลงทะเบียน..." : "ยอมรับ"}
-                            </button>
-                        </div>
+
+                        {isCameraOpen ? '' :
+                            <div className="flex justify-end gap-2 mt-4">
+                                <button
+                                    onClick={handleDeclineReferral}
+                                    className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md"
+                                >
+                                    ปฏิเสธ
+                                </button>
+                                <button
+                                    onClick={() => handleAcceptReferral(referral)}
+                                    className="bg-green-500 text-white px-4 py-2 rounded-md"
+                                    disabled={isUploading}
+                                >
+                                    {isUploading ? "กำลังลงทะเบียน..." : "ยอมรับ"}
+                                </button>
+                            </div>
+                        }
                     </div>
                 </Modal>
 
@@ -1138,6 +1238,7 @@ export default function Customer() {
                             type="file"
                             multiple
                             accept="image/*"
+                            capture="camera"
                             onChange={handleImageChange}
                             className="mb-4 w-full"
                         />

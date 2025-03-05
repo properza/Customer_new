@@ -50,7 +50,7 @@ export const loginWithLine = createAsyncThunk(
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const redirected = urlParams.get("redirected");
-      const referral = urlParams.get("referral"); // ดึงพารามิเตอร์ referral
+      const referral = urlParams.get("referral");
 
       if (mobileCheck() && !redirected) {
         // หากมีพารามิเตอร์ referral ให้รวมไว้ในการเปลี่ยนเส้นทาง

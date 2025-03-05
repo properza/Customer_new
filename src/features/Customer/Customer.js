@@ -885,7 +885,7 @@ export default function Customer() {
                                             </>}
                                     </thead>
                                     <tbody>
-                                        {customerinfo?.st_tpye === "กยศ." ? <>
+                                        {customerinfo?.st_tpye !== "กยศ." ? <>
                                             {/* Replace with dynamic data */}
                                             {Cloud.data ?
                                                 Cloud.data?.map((activity, index) => (

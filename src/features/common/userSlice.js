@@ -7,6 +7,7 @@ const baseurl = 'https://project-dev-0hj6.onrender.com/';
 
 //line liff use
 const lineid = `2002511864-Lw8l8Jo8`;
+// const lineUrl = `2002511864-Lw8l8Jo8`;
 
 //line liff dev
 //const lineid = `2002511864-bjvMvjkv`;
@@ -53,8 +54,7 @@ export const loginWithLine = createAsyncThunk(
       const referral = urlParams.get("referral");
 
       if (mobileCheck() && !redirected) {
-        // หากมีพารามิเตอร์ referral ให้รวมไว้ในการเปลี่ยนเส้นทาง
-        let redirectUrl = `line://app/${lineid}?redirected=true`;
+        let redirectUrl = `https://liff.line.me/${lineid}?redirected=true`;
         if (referral) {
           redirectUrl += `&referral=${referral}`;
         }
@@ -72,7 +72,6 @@ export const loginWithLine = createAsyncThunk(
       const profile = await liff.getProfile();
       console.log("Profile retrieved:", profile);
 
-      // ส่งข้อมูลโปรไฟล์และ referral ไปยัง Redux store
       dispatch(getuser({ profile , referral }));
 
       return profile;

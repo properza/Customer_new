@@ -100,14 +100,14 @@ export const loginWithLine = createAsyncThunk(
       });
       await liff.ready;
 
-      if (mobileCheck() && !redirected) {
-        let redirectUrl = `https://liff.line.me/${lineid}?redirected=true`;
+      // if (mobileCheck() && !redirected) {
+      //   let redirectUrl = `https://liff.line.me/${lineid}?redirected=true`;
         if (referral) {
           redirectUrl += `&referral=${referral}`;
         }
-        window.location.href = redirectUrl;
-        return;
-      }
+      //   window.location.href = redirectUrl;
+      //   return;
+      // }
 
       // หากไม่ได้อยู่ในแอป LINE และยังไม่ได้เข้าสู่ระบบ
       if (!liff.isInClient() && !liff.isLoggedIn()) {

@@ -256,8 +256,6 @@ export default function Customer() {
                     });
                     setIsFaceUploadModalOpen(true);
                 }
-            } else {
-                setIsFaceUploadModalOpen(true); // หากไม่มี faceUrl ให้เปิด modal อัปโหลดใบหน้า
             }
         };
     

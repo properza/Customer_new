@@ -7,7 +7,6 @@ const baseurl = 'https://project-dev-0hj6.onrender.com/';
 
 //line liff use
 const lineid = `2002511864-Lw8l8Jo8`;
-// const lineUrl = `https://liff.line.me/2002511864-Lw8l8Jo8`;
 
 //line liff dev
 //const lineid = `2002511864-bjvMvjkv`;
@@ -62,10 +61,7 @@ function mobileCheck() {
 //         return;
 //       }
 
-//       await liff.init({
-//         liffId: lineid,
-//         withLoginOnExternalBrowser: true
-//       });
+//       await liff.init({ liffId: `${lineid}` });
 
 //       if (!liff.isLoggedIn()) {
 //         liff.login();
@@ -75,6 +71,7 @@ function mobileCheck() {
 //       const profile = await liff.getProfile();
 //       console.log("Profile retrieved:", profile);
 
+//       // ส่งข้อมูลโปรไฟล์และ referral ไปยัง Redux store
 //       dispatch(getuser({ profile , referral }));
 
 //       return profile;
@@ -120,7 +117,7 @@ export const loginWithLine = createAsyncThunk(
       // หากเข้าสู่ระบบแล้ว
       if (liff.isLoggedIn()) {
         const profile = await liff.getProfile();
-        // dispatch(getuser({ profile, referral }));
+        dispatch(getuser({ profile, referral }));
         return profile;
       }
 
@@ -130,7 +127,6 @@ export const loginWithLine = createAsyncThunk(
     }
   }
 );
-
 
 export const getuser = createAsyncThunk(
   'user/getuserData',

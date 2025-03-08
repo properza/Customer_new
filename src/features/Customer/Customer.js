@@ -204,8 +204,6 @@ export default function Customer() {
         loadModels().then(() => console.log("Models loaded"));
     }, []);
 
-
-
     useEffect(() => {
         dispatch(loginWithLine());
         return () => dispatch(resetState());
@@ -223,47 +221,37 @@ export default function Customer() {
 
     // console.log(historyData);
     // console.log(getreward);
-    
-    useEffect(() => {
-        const checkFaceUrl = async () => {
-            if (customerinfo?.faceUrl) {
-                const refImgUrl = Array.isArray(customerinfo.faceUrl) ? customerinfo.faceUrl[0] : customerinfo.faceUrl;
-                const refImgElement = await faceapi.fetchImage(refImgUrl);
-                setReferenceImage(refImgUrl);
-    
-                const detectionOptions = new faceapi.TinyFaceDetectorOptions({
-                    inputSize: 512,
-                    scoreThreshold: 0.5,
-                });
-    
-                const detection = await faceapi
-                    .detectSingleFace(refImgElement, detectionOptions)
-                    .withFaceLandmarks()
-                    .withFaceDescriptor();
-    
-                if (detection) {
-                    console.log("Reference Face Detected:", detection);
-                    setRefDescriptor(detection.descriptor);
-                } else {
-                    console.warn("No face detected in reference image at URL:", refImgUrl);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'ไม่พบใบหน้าในรูปอ้างอิง',
-                        text: 'กรุณาอัปโหลดรูปใบหน้าใหม่ที่มีใบหน้าชัดเจน',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                    setIsFaceUploadModalOpen(true);
-                }
-            }
-        };
-    
-        if (customerinfo?.faceUrl) {
-            checkFaceUrl();
-        }
-    }, [customerinfo?.faceUrl]);
-    
 
+    const checkFaceUrl = async (faceUrl) => {
+        const refImgElement = await faceapi.fetchImage(faceUrl);
+        setReferenceImage(faceUrl);  // Set the reference image URL
+
+        const detectionOptions = new faceapi.TinyFaceDetectorOptions({
+            inputSize: 512,
+            scoreThreshold: 0.5,
+        });
+
+        const detection = await faceapi
+            .detectSingleFace(refImgElement, detectionOptions)
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+        if (detection) {
+            console.log("Reference Face Detected:", detection);
+            setRefDescriptor(detection.descriptor);  // Set the face descriptor
+        } else {
+            console.warn("No face detected in reference image at URL:", faceUrl);
+            Swal.fire({
+                icon: 'error',
+                title: 'ไม่พบใบหน้าในรูปอ้างอิง',
+                text: 'กรุณาอัปโหลดรูปใบหน้าใหม่ที่มีใบหน้าชัดเจน',
+                timer: 1500,
+                showConfirmButton: false
+            });
+            handleCloseModal(); // Assuming this is defined elsewhere in your code
+        }
+    };
+    
     useEffect(() => {
         if (customerinfo) {
             const hasRequiredFields = customerinfo.first_name && customerinfo.last_name && customerinfo.user_code && customerinfo.group_st && customerinfo.branch_st && customerinfo.tpye_st;
@@ -271,6 +259,8 @@ export default function Customer() {
                 setModalRegister(true);
             } else if (!customerinfo.faceUrl) {
                 setIsFaceUploadModalOpen(true);
+            } else if (customerinfo.faceUrl){
+                checkFaceUrl(customerinfo.faceUrl)
             }
 
             // ลำดับการเปิดโมดัลตามที่ต้องการ

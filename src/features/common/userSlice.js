@@ -44,45 +44,6 @@ function mobileCheck() {
   return false;
 }
 
-// export const loginWithLine = createAsyncThunk(
-//   "user/loginWithLine",
-//   async (_, { rejectWithValue, dispatch }) => {
-//     try {
-//       const urlParams = new URLSearchParams(window.location.search);
-//       const redirected = urlParams.get("redirected");
-//       const referral = urlParams.get("referral");
-
-//       if (mobileCheck() && !redirected) {
-//         let redirectUrl = `line://app/${lineid}?redirected=true`;
-//         if (referral) {
-//           redirectUrl += `&referral=${referral}`;
-//         }
-//         window.location.href = redirectUrl;
-//         return;
-//       }
-
-//       await liff.init({ liffId: `${lineid}` });
-
-//       if (!liff.isLoggedIn()) {
-//         liff.login();
-//         return;
-//       }
-
-//       const profile = await liff.getProfile();
-//       console.log("Profile retrieved:", profile);
-
-//       // ส่งข้อมูลโปรไฟล์และ referral ไปยัง Redux store
-//       dispatch(getuser({ profile , referral }));
-
-//       return profile;
-
-//     } catch (error) {
-//       console.error("Login error:", error);
-//       return rejectWithValue(error.message || "Failed to login with LINE");
-//     }
-//   }
-// );
-
 export const loginWithLine = createAsyncThunk(
   "user/loginWithLine",
   async (_, { rejectWithValue, dispatch }) => {
@@ -91,14 +52,8 @@ export const loginWithLine = createAsyncThunk(
       const redirected = urlParams.get("redirected");
       const referral = urlParams.get("referral");
 
-      await liff.init({
-        liffId: lineid,
-        withLoginOnExternalBrowser: true
-      });
-      await liff.ready;
-
-      if (!redirected) {
-        let redirectUrl = `https://liff.line.me/${lineid}?redirected=true`;
+      if (mobileCheck() && !redirected) {
+        let redirectUrl = `line://app/${lineid}?redirected=true`;
         if (referral) {
           redirectUrl += `&referral=${referral}`;
         }
@@ -106,20 +61,20 @@ export const loginWithLine = createAsyncThunk(
         return;
       }
 
-      // หากไม่ได้อยู่ในแอป LINE และยังไม่ได้เข้าสู่ระบบ
-      if (!liff.isInClient() && !liff.isLoggedIn()) {
-        console.log("User is not logged in. Redirecting to login...");
-        liff.login({
-          redirectUri: `https://liff.line.me/${lineid}`
-        });
+      await liff.init({ liffId: `${lineid}` });
+
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
       }
 
-      // หากเข้าสู่ระบบแล้ว
-      if (liff.isLoggedIn()) {
-        const profile = await liff.getProfile();
-        dispatch(getuser({ profile, referral }));
-        return profile;
-      }
+      const profile = await liff.getProfile();
+      console.log("Profile retrieved:", profile);
+
+      // ส่งข้อมูลโปรไฟล์และ referral ไปยัง Redux store
+      dispatch(getuser({ profile , referral }));
+
+      return profile;
 
     } catch (error) {
       console.error("Login error:", error);
@@ -127,6 +82,51 @@ export const loginWithLine = createAsyncThunk(
     }
   }
 );
+
+// export const loginWithLine = createAsyncThunk(
+//   "user/loginWithLine",
+//   async (_, { rejectWithValue, dispatch }) => {
+//     try {
+//       const urlParams = new URLSearchParams(window.location.search);
+//       const redirected = urlParams.get("redirected");
+//       const referral = urlParams.get("referral");
+
+//       await liff.init({
+//         liffId: lineid,
+//         withLoginOnExternalBrowser: true
+//       });
+//       await liff.ready;
+
+//       if (!redirected) {
+//         let redirectUrl = `https://liff.line.me/${lineid}?redirected=true`;
+//         if (referral) {
+//           redirectUrl += `&referral=${referral}`;
+//         }
+//         window.location.href = redirectUrl;
+//         return;
+//       }
+
+//       // หากไม่ได้อยู่ในแอป LINE และยังไม่ได้เข้าสู่ระบบ
+//       if (!liff.isInClient() && !liff.isLoggedIn()) {
+//         console.log("User is not logged in. Redirecting to login...");
+//         liff.login({
+//           redirectUri: `https://liff.line.me/${lineid}`
+//         });
+//       }
+
+//       // หากเข้าสู่ระบบแล้ว
+//       if (liff.isLoggedIn()) {
+//         const profile = await liff.getProfile();
+//         dispatch(getuser({ profile, referral }));
+//         return profile;
+//       }
+
+//     } catch (error) {
+//       console.error("Login error:", error);
+//       return rejectWithValue(error.message || "Failed to login with LINE");
+//     }
+//   }
+// );
 
 export const getuser = createAsyncThunk(
   'user/getuserData',

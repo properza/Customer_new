@@ -62,7 +62,7 @@ export default function Customer() {
     const [selectedRewardId, setSelectedRewardId] = useState(null);
     const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false);
 
-
+    
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -224,6 +224,48 @@ export default function Customer() {
 
     // console.log(historyData);
     // console.log(getreward);
+    
+    useEffect(() => {
+        const checkFaceUrl = async () => {
+            if (customerinfo?.faceUrl) {
+                const refImgUrl = Array.isArray(customerinfo.faceUrl) ? customerinfo.faceUrl[0] : customerinfo.faceUrl;
+                const refImgElement = await faceapi.fetchImage(refImgUrl);
+                setReferenceImage(refImgUrl);
+    
+                const detectionOptions = new faceapi.TinyFaceDetectorOptions({
+                    inputSize: 512,
+                    scoreThreshold: 0.5,
+                });
+    
+                const detection = await faceapi
+                    .detectSingleFace(refImgElement, detectionOptions)
+                    .withFaceLandmarks()
+                    .withFaceDescriptor();
+    
+                if (detection) {
+                    console.log("Reference Face Detected:", detection);
+                    setRefDescriptor(detection.descriptor);
+                } else {
+                    console.warn("No face detected in reference image at URL:", refImgUrl);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ไม่พบใบหน้าในรูปอ้างอิง',
+                        text: 'กรุณาอัปโหลดรูปใบหน้าใหม่ที่มีใบหน้าชัดเจน',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    setIsFaceUploadModalOpen(true);
+                }
+            } else {
+                setIsFaceUploadModalOpen(true); // หากไม่มี faceUrl ให้เปิด modal อัปโหลดใบหน้า
+            }
+        };
+    
+        if (customerinfo?.faceUrl) {
+            checkFaceUrl();
+        }
+    }, [customerinfo?.faceUrl]);
+    
 
     useEffect(() => {
         if (customerinfo) {

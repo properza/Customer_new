@@ -63,8 +63,6 @@ export default function Customer() {
     const [selectedRewardId, setSelectedRewardId] = useState(null);
     const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false);
 
-    
-
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const referralCode = params.get('referral');

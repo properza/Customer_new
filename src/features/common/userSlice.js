@@ -120,7 +120,7 @@ export const loginWithLine = createAsyncThunk(
       // หากเข้าสู่ระบบแล้ว
       if (liff.isLoggedIn()) {
         const profile = await liff.getProfile();
-        dispatch(getuser({ profile, referral }));
+        // dispatch(getuser({ profile, referral }));
         return profile;
       }
 

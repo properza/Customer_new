@@ -26,6 +26,7 @@ import { loadModels } from './Modal/utils/faceApi';
 import Barcode from 'react-barcode';
 import './sty.css'
 import Webcam from 'react-webcam';
+import * as faceapi from 'face-api.js';
 
 export default function Customer() {
     const { profile, customerinfo, isLoading, error } = useSelector((state) => state.user);

@@ -105,7 +105,7 @@ export const loginWithLine = createAsyncThunk(
         if (referral) {
           redirectUrl += `&referral=${referral}`;
         }
-      //   window.location.href = redirectUrl;
+        window.location.href = redirectUrl;
       //   return;
       // }
 

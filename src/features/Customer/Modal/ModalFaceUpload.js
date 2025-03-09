@@ -20,7 +20,7 @@ function dataURLtoFile(dataURL, fileName) {
     return new File([u8arr], fileName, { type: mime });
 }
 
-const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
+const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile}) => {
     const webcamRef = useRef(null);
     const canvasRef = useRef(null);
     const [customerId, setCustomerId] = useState('');
@@ -55,13 +55,14 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
         const canvas = canvasRef.current;
         const displaySize = { width: video.videoWidth, height: video.videoHeight };
         faceapi.matchDimensions(canvas, displaySize);
-
+    
         const interval = setInterval(async () => {
             if (video.paused || video.ended) {
                 clearInterval(interval);
                 return;
             }
-
+    
+            // ตรวจจับใบหน้าทั้งหมด
             const detections = await faceapi.detectAllFaces(
                 video,
                 new faceapi.TinyFaceDetectorOptions({
@@ -69,22 +70,36 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                     scoreThreshold: 0.5,
                 })
             );
-
+    
+            // ตรวจสอบให้เจอแค่ใบเดียว
+            if (detections.length === 1) {
+                // ตรวจจับใบหน้าเดียวพร้อม landmarks
+                const detectionWithLandmarks = await faceapi
+                    .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({
+                        inputSize: 640,
+                        scoreThreshold: 0.5,
+                    }))
+                    .withFaceLandmarks();
+    
+                if (detectionWithLandmarks) {
+                    const isClear = await isImageClear(video);
+                    setStatus(isClear ? 'ใช้ได้' : 'ไม่ใช้ได้');
+                } else {
+                    setStatus('ไม่พบใบหน้าที่ถูกต้อง');
+                }
+            } else {
+                setStatus('ไม่พบใบหน้าหรือพบมากกว่า 1 ใบหน้า');
+            }
+    
             const resizedDetections = faceapi.resizeResults(detections, displaySize);
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             faceapi.draw.drawDetections(canvas, resizedDetections);
-
-            if (detections.length === 1) {
-                const isClear = await isImageClear(video);
-                setStatus(isClear ? 'ใช้ได้' : 'ไม่ใช้ได้');
-            } else {
-                setStatus('ไม่พบใบหน้าหรือพบมากกว่า 1 ใบหน้า');
-            }
         }, 500);
-
+    
         return () => clearInterval(interval);
     }, []);
+    
 
     // ฟังก์ชันตรวจสอบความเบลอของภาพ
     const isImageClear = (video) => {

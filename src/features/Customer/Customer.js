@@ -544,11 +544,9 @@ export default function Customer() {
 
     // บางส่วนใน Customer.js หรือ Modal
     const handleFaceImageUpload = (formData) => {
-        // ต้อง dispatch เป็น { fileData: formData } ให้ตรงกับ upFaceurl
         dispatch(upFaceurl({ fileData: formData }))
             .unwrap()
             .then((res) => {
-                // console.log("Upload success:", res);
                 Swal.fire({
                     icon: 'success',
                     title: 'อัปโหลดรูปหน้าเรียบร้อย',
@@ -561,13 +559,11 @@ export default function Customer() {
                 setIsFaceUploadModalOpen(false);
                 window.location.reload();
 
-                // หลังจากอัปโหลดสำเร็จ ถ้ามี referralCode ให้เปิด face scan
                 if (referral) {
                     setIsFaceScanModalOpen(true);
                 }
             })
             .catch((err) => {
-                // console.error("Upload error:", err);
                 Swal.fire({
                     icon: 'error',
                     title: 'อัปโหลดไม่สำเร็จ',
@@ -1300,6 +1296,7 @@ export default function Customer() {
                         onClose={() => setIsFaceUploadModalOpen(false)}
                         onSubmit={handleFaceImageUpload}
                         profile={profile}
+                        customerinfo={customerinfo}
                     />
 
 

@@ -148,9 +148,9 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             // วาด bounding box
             faceapi.draw.drawDetections(canvas, resizedDetections);
 
-            // วาดวงกลมกลางจอ (ต้องเป็น -centerX เพราะ x กลับด้าน)
+            // วาดวงกลมกลางจอ (ต้องเป็น (displaySize.width / 7.2) เพราะ x กลับด้าน)
             ctx.beginPath();
-            ctx.arc((displaySize.width / 7.2), (displaySize.height / 7), regionRadius, 0, 2 * Math.PI);
+            ctx.arc(-centerX, centerY, regionRadius, 0, 2 * Math.PI);
             ctx.strokeStyle = 'red';
             ctx.lineWidth = 2;
             ctx.stroke();

@@ -228,7 +228,6 @@ export default function Customer() {
                 setIsFaceUploadModalOpen(true);
             }
 
-            // ลำดับการเปิดโมดัลตามที่ต้องการ
             if (referral && customerinfo) {
                 setIsFaceScanModalOpen(true);
             }

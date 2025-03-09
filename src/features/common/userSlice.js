@@ -71,7 +71,6 @@ export const loginWithLine = createAsyncThunk(
       const profile = await liff.getProfile();
       console.log("Profile retrieved:", profile);
 
-      // ส่งข้อมูลโปรไฟล์และ referral ไปยัง Redux store
       dispatch(getuser({ profile , referral }));
 
       return profile;

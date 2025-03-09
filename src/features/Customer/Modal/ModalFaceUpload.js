@@ -20,7 +20,7 @@ function dataURLtoFile(dataURL, fileName) {
     return new File([u8arr], fileName, { type: mime });
 }
 
-const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile}) => {
+const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
     const webcamRef = useRef(null);
     const canvasRef = useRef(null);
     const [customerId, setCustomerId] = useState('');
@@ -30,6 +30,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile}) => {
     const [countdown, setCountdown] = useState(null); // นับถอยหลังสำหรับการถ่ายรูปอัตโนมัติ
     const [capturedImage, setCapturedImage] = useState(null); // เพิ่มตัวแปร capturedImage ที่นี่
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [refStatus, setRefStatus] = useState(null);
 
     useEffect(() => {
         if (profile) {
@@ -54,14 +55,14 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile}) => {
         const video = webcamRef.current.video;
         const canvas = canvasRef.current;
         const displaySize = { width: video.videoWidth, height: video.videoHeight };
+
         faceapi.matchDimensions(canvas, displaySize);
-    
-        // กำหนดจุดศูนย์กลางของวิดีโอและรัศมีของพื้นที่กลางจอ (เช่น 20% ของขนาดที่เล็กที่สุด)
+
+        // กำหนดจุดศูนย์กลางของวิดีโอและรัศมี
         const centerX = displaySize.width / 2;
         const centerY = displaySize.height / 2;
-        const regionRadius = Math.min(displaySize.width, displaySize.height) * 0.2;
-    
-        // ฟังก์ชันตรวจสอบว่าจุดศูนย์กลางของ bounding box อยู่ในพื้นที่กลางจอหรือไม่
+        const regionRadius = Math.min(displaySize.width, displaySize.height) * 0.1; // ปรับได้ตามต้องการ
+
         const isFaceInCenter = (box) => {
             const faceCenterX = box.x + box.width / 2;
             const faceCenterY = box.y + box.height / 2;
@@ -70,56 +71,105 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile}) => {
             const distance = Math.sqrt(dx * dx + dy * dy);
             return distance <= regionRadius;
         };
-    
+
         const interval = setInterval(async () => {
             if (video.paused || video.ended) {
                 clearInterval(interval);
                 return;
             }
-    
-            // ตรวจจับใบหน้าทั้งหมด
+
+            if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
+                return; // รอให้ video พร้อม
+            }
+
+            // ตรวจจับใบหน้า
             const detections = await faceapi.detectAllFaces(
                 video,
-                new faceapi.TinyFaceDetectorOptions({
-                    inputSize: 640,
-                    scoreThreshold: 0.5,
-                })
+                new faceapi.TinyFaceDetectorOptions({ inputSize: 640, scoreThreshold: 0.5 })
             );
-    
+
             let currentStatus = '';
             if (detections.length === 1) {
-                const detection = detections[0];
-                if (isFaceInCenter(detection.box)) {
-                    const isClear = await isImageClear(video);
-                    currentStatus = isClear ? 'ใช้ได้' : 'ไม่ใช้ได้';
+                // ตรวจจับใบหน้าพร้อม landmarks เพื่อดึงข้อมูลดวงตา
+                const detectionWithLandmarks = await faceapi
+                  .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 640, scoreThreshold: 0.5 }))
+                  .withFaceLandmarks();
+              
+                if (detectionWithLandmarks) {
+                  const landmarks = detectionWithLandmarks.landmarks;
+                  const leftEye = landmarks.getLeftEye();
+                  const rightEye = landmarks.getRightEye();
+              
+                  if (leftEye.length === 0 || rightEye.length === 0) {
+                    currentStatus = 'ไม่พบดวงตาในใบหน้า';
+                  } else {
+                    // คำนวณตำแหน่งเฉลี่ยของดวงตาทั้งสอง
+                    const leftEyeXAvg = leftEye.reduce((sum, pt) => sum + pt.x, 0) / leftEye.length;
+                    const leftEyeYAvg = leftEye.reduce((sum, pt) => sum + pt.y, 0) / leftEye.length;
+                    const rightEyeXAvg = rightEye.reduce((sum, pt) => sum + pt.x, 0) / rightEye.length;
+                    const rightEyeYAvg = rightEye.reduce((sum, pt) => sum + pt.y, 0) / rightEye.length;
+              
+                    // คำนวณมุมเอียงของเส้นเชื่อมระหว่างดวงตา
+                    const dy = rightEyeYAvg - leftEyeYAvg;
+                    const dx = rightEyeXAvg - leftEyeXAvg;
+                    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+              
+                    if (Math.abs(angle) > 15) {
+                      currentStatus = 'ใบหน้าต้องเป็นหน้าตรง';
+                    } else {
+                      // ตรวจสอบว่าหน้าอยู่กลางจอหรือไม่ (ใช้ฟังก์ชัน isFaceInCenter ที่มีอยู่)
+                      if (isFaceInCenter(detectionWithLandmarks.detection.box)) {
+                        const isClear = await isImageClear(video);
+                        currentStatus = isClear ? 'ใช้ได้' : 'ไม่ใช้ได้';
+                      } else {
+                        currentStatus = 'กรุณานำใบหน้ามาอยู่กลางจอ';
+                      }
+                    }
+                  }
                 } else {
-                    currentStatus = 'กรุณานำใบหน้ามาอยู่กลางจอ';
+                  currentStatus = 'ไม่พบใบหน้า';
                 }
-                setStatus(currentStatus);
-            } else {
-                setStatus('ไม่พบใบหน้าหรือพบมากกว่า 1 ใบหน้า');
-            }
-    
+              } else {
+                currentStatus = 'ไม่พบใบหน้าหรือพบมากกว่า 1 ใบหน้า';
+              }
+              
+            setStatus(currentStatus);
+
+            // วาด bounding box + วงกลม
             const resizedDetections = faceapi.resizeResults(detections, displaySize);
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // mirror ภาพบน canvas ให้ตรงกับเว็บแคม (ที่ scaleX(-1))
+            ctx.save();
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+
+            // วาด bounding box
             faceapi.draw.drawDetections(canvas, resizedDetections);
-    
-            // วาดพื้นที่กลางจอ (วงกลม)
+
+            // วาดวงกลมกลางจอ (ต้องเป็น -centerX เพราะ x กลับด้าน)
             ctx.beginPath();
-            ctx.arc(centerX, centerY, regionRadius, 0, 2 * Math.PI);
-            ctx.strokeStyle = 'yellow';
+            ctx.arc((displaySize.width / 7.2), (displaySize.height / 7), regionRadius, 0, 2 * Math.PI);
+            ctx.strokeStyle = 'red';
             ctx.lineWidth = 2;
             ctx.stroke();
+            ctx.restore();
         }, 500);
-    
+
         return () => clearInterval(interval);
     }, []);
-    
+
 
     // ฟังก์ชันตรวจสอบความเบลอของภาพ
     const isImageClear = (video) => {
         return new Promise((resolve) => {
+
+            if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
+                resolve(false);
+                return;
+            }
+
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             canvas.width = video.videoWidth;
@@ -145,6 +195,8 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile}) => {
                 variance += Math.pow(gray - mean, 2);
             }
             variance /= len / 4;
+
+
 
             const BLUR_THRESHOLD = 150; // ปรับเกณฑ์ให้ตรวจจับได้ชัดเจนขึ้น
             resolve(variance > BLUR_THRESHOLD);
@@ -178,6 +230,36 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile}) => {
         setIsSubmitting(false);
     };
 
+    useEffect(() => {
+        if (imageSrc) {
+            async function checkCapturedImage() {
+                try {
+                    // ใช้ faceapi.fetchImage สำหรับ data URL ที่ได้จาก imageSrc
+                    const img = await faceapi.fetchImage(imageSrc);
+                    const detectionOptions = new faceapi.TinyFaceDetectorOptions({
+                        inputSize: 512,
+                        scoreThreshold: 0.5,
+                    });
+                    const detection = await faceapi
+                        .detectSingleFace(img, detectionOptions)
+                        .withFaceLandmarks()
+                        .withFaceDescriptor();
+
+                    if (detection) {
+                        console.log("Face detected in captured image:", detection);
+                    } else {
+                        setStatus("ใบหน้าไม่ชัด กรุณาถ่ายใหม่");
+                    }
+                } catch (error) {
+                    console.error("Error detecting face in captured image:", error);
+                    setImageSrc(null);
+                }
+            }
+            checkCapturedImage();
+        }
+    }, [imageSrc]);
+
+
     // ฟังก์ชันบันทึก/อัปโหลด
     const handleSubmit = () => {
         if (!imageSrc) {
@@ -205,18 +287,19 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile}) => {
     useEffect(() => {
         let timer;
         if (status === 'ใช้ได้') {
-            setCountdown(2); // เริ่มนับถอยหลัง 3 วินาที
-            timer = setInterval(() => {
-                setCountdown((prev) => {
-                    if (prev > 1) return prev - 1;
-                    clearInterval(timer);
+            // setCountdown(2);
+            // timer = setInterval(() => {
+            //     setCountdown((prev) => {
+            //         if (prev > 1) return prev - 1;
+            //         clearInterval(timer);
                     handleCapture();
-                    return null;
-                });
-            }, 1000);
-        } else {
-            setCountdown(null); // รีเซ็ตนับถอยหลังถ้าสถานะไม่ใช่ "ใช้ได้"
-        }
+            //         return null;
+            //     });
+            // }, 1000);
+        } 
+        // else {
+        //     setCountdown(null); // รีเซ็ตนับถอยหลังถ้าสถานะไม่ใช่ "ใช้ได้"
+        // }
 
         return () => clearInterval(timer);
     }, [status]);
@@ -271,14 +354,14 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile}) => {
                                 </p>
                             )}
                         </div>
-                        <button
+                        {/* <button
                             onClick={handleCapture}
                             className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded block mx-auto ${status === 'ใช้ได้' ? '' : 'opacity-50 cursor-not-allowed'
                                 }`}
                             disabled={status !== 'ใช้ได้'}
                         >
                             ถ่ายรูป
-                        </button>
+                        </button> */}
                     </>
                 ) : (
                     <>

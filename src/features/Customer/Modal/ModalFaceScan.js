@@ -242,7 +242,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 onSuccess();
             } else {
                 setIcon('error');
-                setIconMessage('ใบหน้าไม่ตรงกัน! กรุณาถ่ายรูปใหม่');
+                setIconMessage('ใบหน้าไม่ตรงกัน!');
                 setHasVerified(false); // Allow re-verification
                 setCapturedImage(null); // Reset captured image
             }

@@ -92,47 +92,47 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             if (detections.length === 1) {
                 // ตรวจจับใบหน้าพร้อม landmarks เพื่อดึงข้อมูลดวงตา
                 const detectionWithLandmarks = await faceapi
-                  .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 640, scoreThreshold: 0.5 }))
-                  .withFaceLandmarks();
-              
+                    .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 640, scoreThreshold: 0.5 }))
+                    .withFaceLandmarks();
+
                 if (detectionWithLandmarks) {
-                  const landmarks = detectionWithLandmarks.landmarks;
-                  const leftEye = landmarks.getLeftEye();
-                  const rightEye = landmarks.getRightEye();
-              
-                  if (leftEye.length === 0 || rightEye.length === 0) {
-                    currentStatus = 'ไม่พบดวงตาในใบหน้า';
-                  } else {
-                    // คำนวณตำแหน่งเฉลี่ยของดวงตาทั้งสอง
-                    const leftEyeXAvg = leftEye.reduce((sum, pt) => sum + pt.x, 0) / leftEye.length;
-                    const leftEyeYAvg = leftEye.reduce((sum, pt) => sum + pt.y, 0) / leftEye.length;
-                    const rightEyeXAvg = rightEye.reduce((sum, pt) => sum + pt.x, 0) / rightEye.length;
-                    const rightEyeYAvg = rightEye.reduce((sum, pt) => sum + pt.y, 0) / rightEye.length;
-              
-                    // คำนวณมุมเอียงของเส้นเชื่อมระหว่างดวงตา
-                    const dy = rightEyeYAvg - leftEyeYAvg;
-                    const dx = rightEyeXAvg - leftEyeXAvg;
-                    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-              
-                    if (Math.abs(angle) > 15) {
-                      currentStatus = 'ใบหน้าต้องเป็นหน้าตรง';
+                    const landmarks = detectionWithLandmarks.landmarks;
+                    const leftEye = landmarks.getLeftEye();
+                    const rightEye = landmarks.getRightEye();
+
+                    if (leftEye.length === 0 || rightEye.length === 0) {
+                        currentStatus = 'ไม่พบดวงตาในใบหน้า';
                     } else {
-                      // ตรวจสอบว่าหน้าอยู่กลางจอหรือไม่ (ใช้ฟังก์ชัน isFaceInCenter ที่มีอยู่)
-                      if (isFaceInCenter(detectionWithLandmarks.detection.box)) {
-                        const isClear = await isImageClear(video);
-                        currentStatus = isClear ? 'ใช้ได้' : 'ไม่ใช้ได้';
-                      } else {
-                        currentStatus = 'กรุณานำใบหน้ามาอยู่กลางจอ';
-                      }
+                        // คำนวณตำแหน่งเฉลี่ยของดวงตาทั้งสอง
+                        const leftEyeXAvg = leftEye.reduce((sum, pt) => sum + pt.x, 0) / leftEye.length;
+                        const leftEyeYAvg = leftEye.reduce((sum, pt) => sum + pt.y, 0) / leftEye.length;
+                        const rightEyeXAvg = rightEye.reduce((sum, pt) => sum + pt.x, 0) / rightEye.length;
+                        const rightEyeYAvg = rightEye.reduce((sum, pt) => sum + pt.y, 0) / rightEye.length;
+
+                        // คำนวณมุมเอียงของเส้นเชื่อมระหว่างดวงตา
+                        const dy = rightEyeYAvg - leftEyeYAvg;
+                        const dx = rightEyeXAvg - leftEyeXAvg;
+                        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+                        if (Math.abs(angle) > 15) {
+                            currentStatus = 'ใบหน้าต้องเป็นหน้าตรง';
+                        } else {
+                            // ตรวจสอบว่าหน้าอยู่กลางจอหรือไม่ (ใช้ฟังก์ชัน isFaceInCenter ที่มีอยู่)
+                            if (isFaceInCenter(detectionWithLandmarks.detection.box)) {
+                                const isClear = await isImageClear(video);
+                                currentStatus = isClear ? 'ใช้ได้' : 'ไม่ใช้ได้';
+                            } else {
+                                currentStatus = 'กรุณานำใบหน้ามาอยู่กลางจอ';
+                            }
+                        }
                     }
-                  }
                 } else {
-                  currentStatus = 'ไม่พบใบหน้า';
+                    currentStatus = 'ไม่พบใบหน้า';
                 }
-              } else {
+            } else {
                 currentStatus = 'ไม่พบใบหน้าหรือพบมากกว่า 1 ใบหน้า';
-              }
-              
+            }
+
             setStatus(currentStatus);
 
             // วาด bounding box + วงกลม
@@ -141,20 +141,19 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // mirror ภาพบน canvas ให้ตรงกับเว็บแคม (ที่ scaleX(-1))
+            // วาด bounding box แบบ mirror
             ctx.save();
             ctx.translate(canvas.width, 0);
             ctx.scale(-1, 1);
-
-            // วาด bounding box
             faceapi.draw.drawDetections(canvas, resizedDetections);
-
-            // วาดวงกลมกลางจอ (ต้องเป็น (displaySize.width / 7.2) เพราะ x กลับด้าน)
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, regionRadius, 0, 2 * Math.PI);
-            ctx.strokeStyle = 'red';
-            ctx.lineWidth = 2;
-            ctx.stroke();
             ctx.restore();
+
+            // ออกมาแล้ววาดวงกลมกึ่งกลางแบบไม่ mirror
+            // ctx.beginPath();
+            // ctx.arc(canvas.width - centerX, centerY, regionRadius, 0, 2 * Math.PI);
+            // ctx.strokeStyle = 'red';
+            // ctx.lineWidth = 2;
+            // ctx.stroke();
         }, 500);
 
         return () => clearInterval(interval);
@@ -292,11 +291,11 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             //     setCountdown((prev) => {
             //         if (prev > 1) return prev - 1;
             //         clearInterval(timer);
-                    handleCapture();
+            handleCapture();
             //         return null;
             //     });
             // }, 1000);
-        } 
+        }
         // else {
         //     setCountdown(null); // รีเซ็ตนับถอยหลังถ้าสถานะไม่ใช่ "ใช้ได้"
         // }
@@ -332,7 +331,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                             />
                             <canvas
                                 ref={canvasRef}
-                                className="absolute top-0 left-0 transform scale-x-[-1]" // สะท้อน canvas ให้ตรงกับวิดีโอ
+                                className="absolute top-0 left-0 transform"
                                 style={{
                                     width: webcamRef.current?.video?.videoWidth,
                                     height: webcamRef.current?.video?.videoHeight,

@@ -68,12 +68,10 @@ export default function Customer() {
         const params = new URLSearchParams(location.search);
         const referralCode = params.get('referral');
       
-        // ดึงค่าที่อาจเป็น "in?code=xxx"
         let rawCheck = params.get('check');
       
-        // ถ้ามี '?' ติดอยู่ ให้ split เอาเฉพาะส่วนแรกก่อนเจอ '?'
         if (rawCheck && rawCheck.includes('?')) {
-          rawCheck = rawCheck.split('?')[0]; // เช่น "in?code=xxx" -> ["in", "code=xxx"] -> เอา "in"
+          rawCheck = rawCheck.split('?')[0];
         }
       
         // จากนั้นจึง set ลง state
@@ -817,7 +815,7 @@ export default function Customer() {
                                                 <tr key={activity.id}>
                                                     <td className="border px-4 py-2">{index + 1}</td>
                                                     <td className="border px-4 py-2">{activity.activityName}</td>
-                                                    <td className="border px-4 py-2">{customerinfo?.st_tpye}</td>
+                                                    <td className="border px-4 py-2">{activity.event_type === 'special' ? 'กยศ.' : 'ทั่วไป'}</td>
                                                     <td className="border px-4 py-2">{activity.status}</td> {/* กำลังเข้าร่วม เข้าร่วมสำเร็จ เข้าร่วมไม่สำเร็จ */}
                                                     <td className="border px-4 py-2 text-center">
                                                         {activity.joinedDurationString}

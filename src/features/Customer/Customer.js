@@ -218,39 +218,6 @@ export default function Customer() {
             dispatch(getspecialEvent({ page: currentPage, userID: profile.userId }));
         }
     }, [dispatch, profile, currentPage]);
-
-    // console.log(historyData);
-    // console.log(getreward);
-
-    const checkFaceUrl = async (faceUrl) => {
-        const refImgElement = await faceapi.fetchImage(faceUrl);
-        setReferenceImage(faceUrl);  // Set the reference image URL
-
-        const detectionOptions = new faceapi.TinyFaceDetectorOptions({
-            inputSize: 512,
-            scoreThreshold: 0.5,
-        });
-
-        const detection = await faceapi
-            .detectSingleFace(refImgElement, detectionOptions)
-            .withFaceLandmarks()
-            .withFaceDescriptor();
-
-        if (detection) {
-            console.log("Reference Face Detected:", detection);
-            setRefDescriptor(detection.descriptor);  // Set the face descriptor
-        } else {
-            console.warn("No face detected in reference image at URL:", faceUrl);
-            Swal.fire({
-                icon: 'error',
-                title: 'ไม่พบใบหน้าในรูปอ้างอิง',
-                text: 'กรุณาอัปโหลดรูปใบหน้าใหม่ที่มีใบหน้าชัดเจน',
-                timer: 1500,
-                showConfirmButton: false
-            });
-            handleCloseModal(); // Assuming this is defined elsewhere in your code
-        }
-    };
     
     useEffect(() => {
         if (customerinfo) {
@@ -259,8 +226,6 @@ export default function Customer() {
                 setModalRegister(true);
             } else if (!customerinfo.faceUrl) {
                 setIsFaceUploadModalOpen(true);
-            } else if (customerinfo.faceUrl){
-                checkFaceUrl(customerinfo.faceUrl)
             }
 
             // ลำดับการเปิดโมดัลตามที่ต้องการ

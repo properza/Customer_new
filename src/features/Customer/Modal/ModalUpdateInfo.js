@@ -310,7 +310,7 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
                 {errors.st_tpye && <p className="text-red-500 text-sm mb-2">{errors.st_tpye}</p>}
 
                 {/* นักศึกษาปีที่ (input ตัวเลข) */}
-                <input
+                {/* <input
                     type="number"
                     name="levelST"
                     placeholder="นักศึกษาปีที่"
@@ -320,7 +320,7 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
                     max="8"
                     className={`border p-2 mb-2 w-full rounded-md ${errors.levelST ? 'border-red-500' : ''}`}
                 />
-                {errors.levelST && <p className="text-red-500 text-sm mb-2">{errors.levelST}</p>}
+                {errors.levelST && <p className="text-red-500 text-sm mb-2">{errors.levelST}</p>} */}
 
                 <div className="flex justify-center items-center gap-2">
                     <button onClick={handleSubmit} className="bg-blue-500 text-white rounded-md px-4 py-2">

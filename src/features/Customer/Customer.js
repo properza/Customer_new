@@ -48,6 +48,7 @@ export default function Customer() {
     const [selectedActivity, setSelectedActivity] = useState(null);
     const [isFaceUploadModalOpen, setIsFaceUploadModalOpen] = useState(false);
     const [referral, setReferral] = useState(null);
+    const [check, setCheck] = useState(null);
     const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
     const [isFaceScanModalOpen, setIsFaceScanModalOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -66,11 +67,23 @@ export default function Customer() {
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const referralCode = params.get('referral');
-        if (referralCode) {
-            setReferral(referralCode);
+      
+        // ดึงค่าที่อาจเป็น "in?code=xxx"
+        let rawCheck = params.get('check');
+      
+        // ถ้ามี '?' ติดอยู่ ให้ split เอาเฉพาะส่วนแรกก่อนเจอ '?'
+        if (rawCheck && rawCheck.includes('?')) {
+          rawCheck = rawCheck.split('?')[0]; // เช่น "in?code=xxx" -> ["in", "code=xxx"] -> เอา "in"
         }
-    }, [location.search]);
-
+      
+        // จากนั้นจึง set ลง state
+        if (referralCode && rawCheck) {
+          setReferral(referralCode);
+          setCheck(rawCheck);
+        }
+      }, [location.search]);
+      
+    
     const handleImageChange = (event) => {
         const files = Array.from(event.target.files);
         if (selectedActivityImages.length + files.length > 10) {
@@ -466,6 +479,7 @@ export default function Customer() {
                 // เพิ่ม customerLatitude และ customerLongitude ไปใน formData
                 formData.append("customerLatitude", customerLatitude);
                 formData.append("customerLongitude", customerLongitude);
+                formData.append("check",check);
 
                 // เริ่มทำการสมัครสมาชิกหลังจากได้พิกัด
                 submitFormData(formData);
@@ -791,7 +805,8 @@ export default function Customer() {
                                             <th className="border px-4 py-2">กิจกรรม</th>
                                             <th className="border px-4 py-2">ประเภทกิจกรรม</th>
                                             <th className="border px-4 py-2">การเข้าร่วม</th>
-                                            <th className="border px-4 py-2">เวลาเข้าร่วม (ชม.)</th>
+                                            <th className="border px-4 py-2">เวลาเข้าร่วม</th>
+                                            <th className="border px-4 py-2">เวลาของกิจกรรม</th>
                                             <th className="border px-4 py-2">รายละเอียด</th>
                                         </tr>
                                     </thead>
@@ -805,7 +820,10 @@ export default function Customer() {
                                                     <td className="border px-4 py-2">{customerinfo?.st_tpye}</td>
                                                     <td className="border px-4 py-2">{activity.status}</td> {/* กำลังเข้าร่วม เข้าร่วมสำเร็จ เข้าร่วมไม่สำเร็จ */}
                                                     <td className="border px-4 py-2 text-center">
-                                                        {Array.isArray(activity.pointsEarned) ? activity.pointsEarned.join(' / ') : '0'}
+                                                        {activity.joinedDurationString}
+                                                    </td>
+                                                    <td className='border px-4 py-2 text-center'>
+                                                        {activity.activityDurationString}
                                                     </td>
 
                                                     <td className="border px-4 py-2">
@@ -1086,10 +1104,8 @@ export default function Customer() {
                 {/* Referral Modal */}
                 <Modal isOpen={isReferralModalOpen} onClose={handleDeclineReferral}>
                     <div className="p-4">
-                        <h2 className="text-lg font-bold mb-4">คำเชิญเข้าร่วมกิจกรรม</h2>
-                        <p>คุณได้รับคำเชิญให้เข้าร่วมกิจกรรมผ่าน referral: <strong>{referral}</strong></p>
-
-                        {/* Input Upload รูป */}
+                        <h2 className="text-lg font-bold mb-4">{check === 'in' ?'เข้าร่วมกิจกรรม':'ลงชื่อออกจากกิจกรรม'}</h2>
+                        <p>กิจกรรมรหัส : <strong>{referral}</strong></p>
                         {!isCameraOpen ? (
                             <button
                                 onClick={startCamera}
@@ -1122,7 +1138,7 @@ export default function Customer() {
                                     </button>
                                 </div>
                             </div>
-                        )}
+                        )} 
 
                         {/* แสดงภาพที่ถ่ายทั้งหมด */}
                         {selectedImages.length > 0 && (
@@ -1155,7 +1171,7 @@ export default function Customer() {
                                     ปฏิเสธ
                                 </button>
                                 <button
-                                    onClick={() => handleAcceptReferral(referral)}
+                                    onClick={() => handleAcceptReferral(referral , check)}
                                     className="bg-green-500 text-white px-4 py-2 rounded-md"
                                     disabled={isUploading}
                                 >

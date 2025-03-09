@@ -51,11 +51,19 @@ export const loginWithLine = createAsyncThunk(
       const urlParams = new URLSearchParams(window.location.search);
       const redirected = urlParams.get("redirected");
       const referral = urlParams.get("referral");
+      
+      let rawCheck = urlParams.get("check");
+
+      let check = rawCheck;
+      if (rawCheck && rawCheck.includes("?")) {
+        const [checkValue] = rawCheck.split("?");
+        check = checkValue;
+      }
 
       if (mobileCheck() && !redirected) {
         let redirectUrl = `line://app/${lineid}?redirected=true`;
-        if (referral) {
-          redirectUrl += `&referral=${referral}`;
+        if (referral && check) {
+          redirectUrl += `&referral=${referral}&check=${check}`;
         }
         window.location.href = redirectUrl;
         return;
@@ -71,7 +79,7 @@ export const loginWithLine = createAsyncThunk(
       const profile = await liff.getProfile();
       console.log("Profile retrieved:", profile);
 
-      dispatch(getuser({ profile , referral }));
+      dispatch(getuser({ profile, referral ,check }));
 
       return profile;
 
@@ -149,35 +157,6 @@ export const getuser = createAsyncThunk(
     }
   }
 );
-
-// export const loginWithLine = createAsyncThunk(
-//   "user/loginWithLine",
-//   async (_, { rejectWithValue, dispatch }) => {
-//     try {
-//       // เริ่มต้น LIFF ด้วย liffId ของคุณ
-//       await liff.init({ liffId: `${lineid}` });
-
-//       // ตรวจสอบว่าผู้ใช้ได้เข้าสู่ระบบแล้วหรือไม่
-//       if (!liff.isLoggedIn()) {
-//         liff.login();
-//         return;
-//       }
-
-//       // ดึงข้อมูลโปรไฟล์ของผู้ใช้
-//       const profile = await liff.getProfile();
-//       console.log("Profile retrieved:", profile);
-
-//       // ส่งข้อมูลโปรไฟล์ไปยัง Redux store
-//       dispatch(getuser({ profile }));
-
-//       return profile;
-
-//     } catch (error) {
-//       console.error("Login error:", error);
-//       return rejectWithValue(error.message || "Failed to login with LINE");
-//     }
-//   }
-// );
 
 export const updateinfo = createAsyncThunk(
   "user/updateinfos",

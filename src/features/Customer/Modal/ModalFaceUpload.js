@@ -150,7 +150,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
 
             // วาดวงกลมกลางจอ (ต้องเป็น (displaySize.width / 7.2) เพราะ x กลับด้าน)
             ctx.beginPath();
-            ctx.arc(-centerX, centerY, regionRadius, 0, 2 * Math.PI);
+            ctx.arc(centerX, centerY, regionRadius, 0, 2 * Math.PI);
             ctx.strokeStyle = 'red';
             ctx.lineWidth = 2;
             ctx.stroke();

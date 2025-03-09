@@ -113,8 +113,8 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
         // ตรวจสอบ last_name (ต้องไม่ว่างและเป็นภาษาไทย)
         if (!formData.last_name) {
             newErrors.last_name = 'กรุณากรอกนามสกุล';
-        } else if (!/^[\u0E00-\u0E7F\s]+$/.test(formData.last_name)) {
-            newErrors.last_name = 'กรุณากรอกเฉพาะภาษาไทยเท่านั้น';
+        } else if (!/^[A-Za-z\u0E00-\u0E7F\s]+$/.test(formData.last_name)) {
+            newErrors.last_name = 'ไม่สามารถป้อนตัวอักษรพิเศษได้';
         }
 
         // ตรวจสอบ user_code (ต้องไม่ว่างและเป็นตัวเลขหรือ - เท่านั้น)

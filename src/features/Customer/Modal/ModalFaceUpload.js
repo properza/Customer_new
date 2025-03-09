@@ -56,6 +56,21 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile}) => {
         const displaySize = { width: video.videoWidth, height: video.videoHeight };
         faceapi.matchDimensions(canvas, displaySize);
     
+        // กำหนดจุดศูนย์กลางของวิดีโอและรัศมีของพื้นที่กลางจอ (เช่น 20% ของขนาดที่เล็กที่สุด)
+        const centerX = displaySize.width / 2;
+        const centerY = displaySize.height / 2;
+        const regionRadius = Math.min(displaySize.width, displaySize.height) * 0.2;
+    
+        // ฟังก์ชันตรวจสอบว่าจุดศูนย์กลางของ bounding box อยู่ในพื้นที่กลางจอหรือไม่
+        const isFaceInCenter = (box) => {
+            const faceCenterX = box.x + box.width / 2;
+            const faceCenterY = box.y + box.height / 2;
+            const dx = faceCenterX - centerX;
+            const dy = faceCenterY - centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            return distance <= regionRadius;
+        };
+    
         const interval = setInterval(async () => {
             if (video.paused || video.ended) {
                 clearInterval(interval);
@@ -71,22 +86,16 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile}) => {
                 })
             );
     
-            // ตรวจสอบให้เจอแค่ใบเดียว
+            let currentStatus = '';
             if (detections.length === 1) {
-                // ตรวจจับใบหน้าเดียวพร้อม landmarks
-                const detectionWithLandmarks = await faceapi
-                    .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({
-                        inputSize: 640,
-                        scoreThreshold: 0.5,
-                    }))
-                    .withFaceLandmarks();
-    
-                if (detectionWithLandmarks) {
+                const detection = detections[0];
+                if (isFaceInCenter(detection.box)) {
                     const isClear = await isImageClear(video);
-                    setStatus(isClear ? 'ใช้ได้' : 'ไม่ใช้ได้');
+                    currentStatus = isClear ? 'ใช้ได้' : 'ไม่ใช้ได้';
                 } else {
-                    setStatus('ไม่พบใบหน้าที่ถูกต้อง');
+                    currentStatus = 'กรุณานำใบหน้ามาอยู่กลางจอ';
                 }
+                setStatus(currentStatus);
             } else {
                 setStatus('ไม่พบใบหน้าหรือพบมากกว่า 1 ใบหน้า');
             }
@@ -95,6 +104,13 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile}) => {
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             faceapi.draw.drawDetections(canvas, resizedDetections);
+    
+            // วาดพื้นที่กลางจอ (วงกลม)
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, regionRadius, 0, 2 * Math.PI);
+            ctx.strokeStyle = 'yellow';
+            ctx.lineWidth = 2;
+            ctx.stroke();
         }, 500);
     
         return () => clearInterval(interval);

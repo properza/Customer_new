@@ -227,7 +227,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
             const distance = faceapi.euclideanDistance(refDescriptor, probeDetection.descriptor);
             console.log("Distance:", distance);
 
-            const threshold = 0.4; // ลดค่าความคลาดเคลื่อนเพื่อเพิ่มความแม่นยำ
+            const threshold = 0.4;
             if (distance < threshold) {
                 await Swal.fire({
                     icon: 'success',
@@ -238,22 +238,10 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     position: 'top-end',
                     timerProgressBar: true
                 });
-                // await setIcon('success');  // แสดงไอคอน success
-                // setIconMessage('ใบหน้าตรงกัน!');
                 handleCloseModal();
                 onSuccess();
             } else {
-                // Swal.fire({
-                //     icon: 'error',
-                //     title: 'ใบหน้าไม่ตรงกัน!',
-                //     text: 'กรุณาถ่ายรูปใหม่',
-                //     timer: 1500,
-                //     showConfirmButton: false,
-                //     toast: true,
-                //     position: 'top-end',
-                //     timerProgressBar: true
-                // });
-                setIcon('error');  // แสดงไอคอน error
+                setIcon('error');
                 setIconMessage('ใบหน้าไม่ตรงกัน! กรุณาถ่ายรูปใหม่');
                 setHasVerified(false); // Allow re-verification
                 setCapturedImage(null); // Reset captured image

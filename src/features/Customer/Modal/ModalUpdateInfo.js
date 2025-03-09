@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import Swal from 'sweetalert2'; // นำเข้า SweetAlert2
+import Swal from 'sweetalert2';
 
 export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
-    const { profile, customerinfo, isLoading, error } = useSelector((state) => state.user);
+    const { profile, customerinfo } = useSelector((state) => state.user);
     const [formData, setFormData] = useState({
         customer_id: profile?.userId || '',
         first_name: '',
@@ -16,14 +16,16 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
         levelST: ''
     });
 
-    // State สำหรับจัดการข้อผิดพลาด
+    // State สำหรับจัดการข้อผิดพลาด (errors จะแสดงเฉพาะเมื่อกด Submit)
     const [errors, setErrors] = useState({
         first_name: '',
         last_name: '',
         user_code: '',
         group_st: '',
         branch_st: '',
-        levelST: '',
+        tpye_st: '',
+        st_tpye: '',
+        levelST: ''
     });
 
     useEffect(() => {
@@ -39,8 +41,10 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
                 st_tpye: customerinfo.st_tpye || '',
                 levelST: customerinfo.levelST || ''
             });
+            // เคลียร์ errors เมื่อเปิด modal
+            setErrors({});
         }
-    }, [isOpen, JSON.stringify(customerinfo)]);
+    }, [isOpen, customerinfo, profile]);
 
     // กำหนดแมปปิ้งระหว่างคณะและสาขา
     const branchOptionsMap = {
@@ -82,149 +86,119 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
         ]
     };
 
+    // handleInputChange จะอัปเดต formData และเคลียร์ error ของ field นั้น (ไม่แสดง error ทันที)
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-
-        // กำหนด RegEx สำหรับการตรวจสอบ
-        let regex;
-        let isValid = true;
-        let errorMessage = '';
-
-        switch (name) {
-            case 'first_name':
-            case 'last_name':
-                // ตรวจสอบว่าเป็นตัวอักษรไทยเท่านั้น
-                regex = /^[\u0E00-\u0E7F\s]+$/;
-                isValid = regex.test(value);
-                if (!isValid && value !== '') {
-                    errorMessage = 'กรุณากรอกเฉพาะภาษาไทยเท่านั้น';
-                }
-                break;
-            case 'user_code':
-                // ตรวจสอบว่าเป็นตัวเลขและเครื่องหมาย - เท่านั้น
-                regex = /^[0-9\-]*$/;
-                isValid = regex.test(value);
-                if (!isValid && value !== '') {
-                    errorMessage = 'กรุณากรอกเฉพาะตัวเลขและเครื่องหมาย - เท่านั้น';
-                }
-                break;
-            case 'levelST':
-                // ตรวจสอบว่าเป็นตัวเลขระหว่าง 1 ถึง 8
-                const num = Number(value);
-                if (value === '') {
-                    isValid = false;
-                    errorMessage = 'กรุณากรอกนักศึกษาปีที่';
-                } else if (isNaN(num) || num < 1 || num > 8) {
-                    isValid = false;
-                    errorMessage = 'กรุณากรอกตัวเลขระหว่าง 1 ถึง 8';
-                }
-                break;
-            case 'group_st':
-                // เมื่อเลือกคณะ ต้องเคลียร์ค่า branch_st
-                isValid = true;
-                break;
-            case 'levelST':
-                // ตรวจสอบว่าเป็นตัวเลขและเครื่องหมาย - เท่านั้น
-                regex = /^[0-9\-]*$/;
-                isValid = regex.test(value);
-                if (!isValid && value !== '') {
-                    errorMessage = 'กรุณากรอกเฉพาะตัวเลขเท่านั้น';
-                }
-                break;
-            default:
-                isValid = true;
-        }
-
-        if (isValid) {
-            setFormData(prevData => ({
-                ...prevData,
-                [name]: value,
-                // หากเปลี่ยน group_st, ให้เคลียร์ branch_st
-                ...(name === 'group_st' ? { branch_st: '' } : {})
-            }));
-            setErrors(prevErrors => ({
-                ...prevErrors,
-                [name]: '',
-                ...(name === 'group_st' ? { branch_st: '' } : {})
-            }));
-        } else {
-            setFormData(prevData => ({
-                ...prevData,
-                [name]: '' // รีเซ็ตฟิลด์เป็นค่าว่างเมื่อเกิดข้อผิดพลาด
-            }));
-            setErrors(prevErrors => ({
-                ...prevErrors,
-                [name]: errorMessage,
-            }));
-
-            // แสดง Swal.fire เมื่อมีข้อผิดพลาดในแต่ละฟิลด์
-            Swal.fire({
-                icon: 'error',
-                title: 'ข้อผิดพลาด',
-                text: errorMessage,
-                timer: 1500,
-                showConfirmButton: false,
-                toast: true,
-                position: 'top-end',
-                timerProgressBar: true
-            });
-        }
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value,
+            ...(name === 'group_st' ? { branch_st: '' } : {})
+        }));
+        setErrors((prevErrors) => ({
+            ...prevErrors,
+            [name]: ''
+        }));
     };
 
-    useEffect(() => {
-        if (profile) {
-            setFormData(prevData => ({
-                ...prevData,
-                customer_id: profile.userId || '',
-            }));
+    // validateForm ตรวจสอบข้อมูลทั้งหมดและ return errors object
+    const validateForm = () => {
+        const newErrors = {};
+        // ตรวจสอบ first_name (ต้องไม่ว่างและเป็นภาษาไทย)
+        if (!formData.first_name) {
+            newErrors.first_name = 'กรุณากรอกชื่อ';
+        } else if (!/^[A-Za-z\u0E00-\u0E7F\s]+$/.test(formData.first_name)) {
+            newErrors.first_name = 'ไม่สามารถป้อนตัวอักษรพิเศษได้';
         }
-    }, [profile]);
+
+        // ตรวจสอบ last_name (ต้องไม่ว่างและเป็นภาษาไทย)
+        if (!formData.last_name) {
+            newErrors.last_name = 'กรุณากรอกนามสกุล';
+        } else if (!/^[\u0E00-\u0E7F\s]+$/.test(formData.last_name)) {
+            newErrors.last_name = 'กรุณากรอกเฉพาะภาษาไทยเท่านั้น';
+        }
+
+        // ตรวจสอบ user_code (ต้องไม่ว่างและเป็นตัวเลขหรือ - เท่านั้น)
+        if (!formData.user_code) {
+            newErrors.user_code = 'กรุณากรอกรหัสนักศึกษา';
+        } else if (!/^[0-9]{11}-[0-9]$/.test(formData.user_code)) {
+            newErrors.user_code = 'รูปแบบรหัสนักศึกษาควรเป็น ตามตั้วอย่าง(64243206000-0)';
+        }
+
+        // ตรวจสอบ group_st
+        if (!formData.group_st) {
+            newErrors.group_st = 'กรุณาเลือกคณะ';
+        }
+
+        // ตรวจสอบ branch_st
+        if (!formData.branch_st) {
+            newErrors.branch_st = 'กรุณาเลือกสาขา';
+        }
+
+        // ตรวจสอบ tpye_st (เลือกระดับการศึกษา)
+        if (!formData.tpye_st) {
+            newErrors.tpye_st = 'กรุณาเลือกระดับการศึกษา';
+        }
+
+        // ตรวจสอบ st_tpye (เลือกประเภทนักศึกษา) หากมี field นี้
+        if (!formData.st_tpye) {
+            newErrors.st_tpye = 'กรุณาเลือกประเภทนักศึกษา';
+        }
+
+        // ตรวจสอบ levelST (ต้องไม่ว่าง และเป็นตัวเลขระหว่าง 1 ถึง 8)
+        if (!formData.levelST) {
+            newErrors.levelST = 'กรุณากรอกนักศึกษาปีที่';
+        } else {
+            const num = Number(formData.levelST);
+            if (isNaN(num) || num < 1 || num > 8) {
+                newErrors.levelST = 'กรุณากรอกตัวเลขระหว่าง 1 ถึง 8';
+            }
+        }
+
+        return newErrors;
+    };
+
+    // ในฟังก์ชัน handleInputChange หรือแยกเป็น handleUserCodeChange เฉพาะ field นี้
+    const handleUserCodeChange = (e) => {
+        let { name, value } = e.target;
+        // เอาเฉพาะตัวเลขและเครื่องหมาย - ออกมา
+        value = value.replace(/[^0-9\-]/g, '');
+
+        // ถ้ายังไม่มี dash และตัวเลขครบ 11 ตัว ให้เพิ่ม dash อัตโนมัติ
+        if (!value.includes('-') && value.length === 11) {
+            value = value + '-';
+        }
+
+        // หากไม่มี dashแต่เกิน 11 ตัว ให้แทรก dashที่ตำแหน่งที่ 11
+        if (!value.includes('-') && value.length > 11) {
+            value = value.slice(0, 11) + '-' + value.slice(11);
+        }
+
+        // จำกัดความยาวรวมไม่เกิน 13 ตัว
+        if (value.length > 13) {
+            value = value.slice(0, 13);
+        }
+
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value
+        }));
+    };
+
+
 
     const handleSubmit = () => {
-        // ตรวจสอบก่อนส่งฟอร์มว่ามีข้อผิดพลาดหรือไม่
-        const hasErrors = Object.values(errors).some(error => error !== '');
-        if (hasErrors) {
-            Swal.fire({
-                icon: 'error',
-                title: 'ข้อผิดพลาด',
-                text: 'กรุณาแก้ไขข้อผิดพลาดก่อนส่งฟอร์ม',
-                timer: 1500,
-                showConfirmButton: false,
-                toast: true,
-                position: 'top-end',
-                timerProgressBar: true
-            });
-            return;
-        }
-
-        // ตรวจสอบว่าข้อมูลที่จำเป็นถูกกรอกหรือไม่
-        if (
-            !formData.first_name ||
-            !formData.last_name ||
-            !formData.user_code ||
-            !formData.group_st ||
-            !formData.branch_st || // เพิ่มการตรวจสอบ branch_st
-            !formData.tpye_st ||
-            !formData.st_tpye ||
-            !formData.levelST
-        ) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'ข้อมูลไม่ครบถ้วน',
-                text: 'กรุณากรอกข้อมูลให้ครบถ้วน',
-                timer: 1500,
-                showConfirmButton: false,
-                toast: true,
-                position: 'top-end',
-                timerProgressBar: true
-            });
+        // รัน validateForm เมื่อกด submit
+        const newErrors = validateForm();
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            // ไม่แสดง Swal.fire แบบ toast error เมื่อมี error (จะแสดง inline แทน)
             return;
         }
 
         onSubmit(formData);
         onClose();
 
-        // แสดงการบันทึกสำเร็จ
+        // แสดง Swal.fire สำหรับความสำเร็จ (สามารถเก็บไว้ได้ตามที่ต้องการ)
         Swal.fire({
             icon: 'success',
             title: 'สำเร็จ',
@@ -272,7 +246,7 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
                     name="user_code"
                     placeholder="รหัสนักศึกษา"
                     value={formData.user_code}
-                    onChange={handleInputChange}
+                    onChange={handleUserCodeChange}
                     className={`border p-2 mb-2 w-full rounded-md ${errors.user_code ? 'border-red-500' : ''}`}
                 />
                 {errors.user_code && <p className="text-red-500 text-sm mb-2">{errors.user_code}</p>}
@@ -298,7 +272,7 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
                     value={formData.branch_st}
                     onChange={handleInputChange}
                     className={`border p-2 mb-2 w-full rounded-md ${errors.branch_st ? 'border-red-500' : ''}`}
-                    disabled={!formData.group_st} // ปิดใช้งานถ้ายังไม่ได้เลือกคณะ
+                    disabled={!formData.group_st}
                 >
                     <option value="" disabled>เลือกสาขา</option>
                     {formData.group_st && branchOptionsMap[formData.group_st]?.map((branch, index) => (
@@ -307,45 +281,35 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
                 </select>
                 {errors.branch_st && <p className="text-red-500 text-sm mb-2">{errors.branch_st}</p>}
 
-                {/* สาขาเพิ่มเติมถ้าจำเป็น */}
-
-                {/* <input
-                    type="text"
-                    name="branch_st_other"
-                    placeholder="สาขา (ถ้าไม่พบในตัวเลือก)"
-                    value={formData.branch_st_other || ''}
-                    onChange={handleInputChange}
-                    className="border p-2 mb-2 w-full rounded-md"
-                    disabled={!!formData.branch_st} // เปิดใช้งานเมื่อไม่ได้เลือกใน select
-                /> */}
-
                 {/* ระดับ (select) */}
                 <select
                     name="tpye_st"
                     value={formData.tpye_st}
                     onChange={handleInputChange}
-                    className="border p-2 mb-2 w-full rounded-md"
+                    className={`border p-2 mb-2 w-full rounded-md ${errors.tpye_st ? 'border-red-500' : ''}`}
                 >
                     <option value="" disabled>เลือกระดับการศึกษา</option>
                     <option value="ปวช.">ปวช.</option>
                     <option value="ปวส.">ปวส.</option>
                     <option value="ป.ตรี">ป.ตรี</option>
                 </select>
+                {errors.tpye_st && <p className="text-red-500 text-sm mb-2">{errors.tpye_st}</p>}
 
                 {/* ประเภทนักศึกษา (select) */}
                 {!customerinfo.st_tpye &&
-                <select
-                    name="st_tpye"
-                    value={formData.st_tpye}
-                    onChange={handleInputChange}
-                    className="border p-2 mb-2 w-full rounded-md"
-                >
-                    <option value="" disabled>เลือกประเภทนักศึกษา</option>
-                    <option value="ทั่วไป">ทั่วไป</option>
-                    <option value="กยศ.">กยศ.</option>
-                </select>}
+                    <select
+                        name="st_tpye"
+                        value={formData.st_tpye}
+                        onChange={handleInputChange}
+                        className={`border p-2 mb-2 w-full rounded-md ${errors.st_tpye ? 'border-red-500' : ''}`}
+                    >
+                        <option value="" disabled>เลือกประเภทนักศึกษา</option>
+                        <option value="ทั่วไป">ทั่วไป</option>
+                        <option value="กยศ.">กยศ.</option>
+                    </select>}
+                {errors.st_tpye && <p className="text-red-500 text-sm mb-2">{errors.st_tpye}</p>}
 
-                {/* นักศึกษาปีที่ (ตัวเลข 1-8) */}
+                {/* นักศึกษาปีที่ (input ตัวเลข) */}
                 <input
                     type="number"
                     name="levelST"
@@ -369,4 +333,4 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
             </div>
         </div>
     );
-};
+}

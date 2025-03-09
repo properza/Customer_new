@@ -157,30 +157,33 @@ export default function ModalUpdateInfo({ isOpen, onClose, onSubmit }) {
         return newErrors;
     };
 
-    // ในฟังก์ชัน handleInputChange หรือแยกเป็น handleUserCodeChange เฉพาะ field นี้
     const handleUserCodeChange = (e) => {
         let { name, value } = e.target;
-        // เอาเฉพาะตัวเลขและเครื่องหมาย - ออกมา
         value = value.replace(/[^0-9\-]/g, '');
 
-        // ถ้ายังไม่มี dash และตัวเลขครบ 11 ตัว ให้เพิ่ม dash อัตโนมัติ
         if (!value.includes('-') && value.length === 11) {
             value = value + '-';
         }
 
-        // หากไม่มี dashแต่เกิน 11 ตัว ให้แทรก dashที่ตำแหน่งที่ 11
         if (!value.includes('-') && value.length > 11) {
             value = value.slice(0, 11) + '-' + value.slice(11);
         }
 
-        // จำกัดความยาวรวมไม่เกิน 13 ตัว
         if (value.length > 13) {
             value = value.slice(0, 13);
         }
 
+        let newLevelST = '';
+        const digitPart = value.slice(0, 2);
+        if (/^\d{2}$/.test(digitPart)) {
+            const currentThaiYearLastTwo = (new Date().getFullYear() + 543) % 100;
+            newLevelST = currentThaiYearLastTwo - parseInt(digitPart, 10);
+        }
+
         setFormData((prevData) => ({
             ...prevData,
-            [name]: value
+            [name]: value,
+            levelST: newLevelST
         }));
     };
 

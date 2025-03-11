@@ -54,15 +54,19 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
     const handleVideoOnPlay = useCallback(async () => {
         const video = webcamRef.current.video;
         const canvas = canvasRef.current;
-        const displaySize = { width: video.videoWidth, height: video.videoHeight };
-
-        faceapi.matchDimensions(canvas, displaySize);
-
-        // กำหนดจุดศูนย์กลางของวิดีโอและรัศมี
+        
+        // ขนาดที่แท้จริงของ video หรือ canvas
+        const displaySize = { 
+            width: video.videoWidth || window.innerWidth, // กำหนดขนาดจาก video หรือขนาดหน้าจอ
+            height: video.videoHeight || window.innerHeight
+        };
+    
+        // คำนวณตำแหน่งกลาง
         const centerX = displaySize.width / 2;
         const centerY = displaySize.height / 2;
-        const regionRadius = Math.min(displaySize.width, displaySize.height) * 0.1; // ปรับได้ตามต้องการ
-
+        const regionRadius = Math.min(displaySize.width, displaySize.height) * 0.1; // ขนาดของวงกลม
+    
+        // ตรวจสอบว่าใบหน้าอยู่กลางหรือไม่
         const isFaceInCenter = (box) => {
             const faceCenterX = box.x + box.width / 2;
             const faceCenterY = box.y + box.height / 2;
@@ -71,53 +75,48 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             const distance = Math.sqrt(dx * dx + dy * dy);
             return distance <= regionRadius;
         };
-
+    
         const interval = setInterval(async () => {
             if (video.paused || video.ended) {
                 clearInterval(interval);
                 return;
             }
-
+    
             if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
                 return; // รอให้ video พร้อม
             }
-
-            // ตรวจจับใบหน้า
+    
             const detections = await faceapi.detectAllFaces(
                 video,
                 new faceapi.TinyFaceDetectorOptions({ inputSize: 640, scoreThreshold: 0.5 })
             );
-
+    
             let currentStatus = '';
             if (detections.length === 1) {
-                // ตรวจจับใบหน้าพร้อม landmarks เพื่อดึงข้อมูลดวงตา
                 const detectionWithLandmarks = await faceapi
                     .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 640, scoreThreshold: 0.5 }))
                     .withFaceLandmarks();
-
+    
                 if (detectionWithLandmarks) {
                     const landmarks = detectionWithLandmarks.landmarks;
                     const leftEye = landmarks.getLeftEye();
                     const rightEye = landmarks.getRightEye();
-
+    
                     if (leftEye.length === 0 || rightEye.length === 0) {
                         currentStatus = 'ไม่พบดวงตาในใบหน้า';
                     } else {
-                        // คำนวณตำแหน่งเฉลี่ยของดวงตาทั้งสอง
                         const leftEyeXAvg = leftEye.reduce((sum, pt) => sum + pt.x, 0) / leftEye.length;
                         const leftEyeYAvg = leftEye.reduce((sum, pt) => sum + pt.y, 0) / leftEye.length;
                         const rightEyeXAvg = rightEye.reduce((sum, pt) => sum + pt.x, 0) / rightEye.length;
                         const rightEyeYAvg = rightEye.reduce((sum, pt) => sum + pt.y, 0) / rightEye.length;
-
-                        // คำนวณมุมเอียงของเส้นเชื่อมระหว่างดวงตา
+    
                         const dy = rightEyeYAvg - leftEyeYAvg;
                         const dx = rightEyeXAvg - leftEyeXAvg;
                         const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-
+    
                         if (Math.abs(angle) > 15) {
                             currentStatus = 'ใบหน้าต้องเป็นหน้าตรง';
                         } else {
-                            // ตรวจสอบว่าหน้าอยู่กลางจอหรือไม่ (ใช้ฟังก์ชัน isFaceInCenter ที่มีอยู่)
                             if (isFaceInCenter(detectionWithLandmarks.detection.box)) {
                                 const isClear = await isImageClear(video);
                                 currentStatus = isClear ? 'ใช้ได้' : 'ไม่ใช้ได้';
@@ -132,35 +131,28 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             } else {
                 currentStatus = 'ไม่พบใบหน้าหรือพบมากกว่า 1 ใบหน้า';
             }
-
+    
             setStatus(currentStatus);
-
+    
             // วาด bounding box + วงกลม
             const resizedDetections = faceapi.resizeResults(detections, displaySize);
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // mirror ภาพบน canvas ให้ตรงกับเว็บแคม (ที่ scaleX(-1))
-            // วาด bounding box แบบ mirror
-            ctx.save();
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
+    
+            // วาด bounding box
             faceapi.draw.drawDetections(canvas, resizedDetections);
-            ctx.restore();
-
-            // ออกมาแล้ววาดวงกลมกึ่งกลางแบบไม่ mirror
-            // ctx.beginPath();
-            // ctx.arc(canvas.width - centerX, centerY, regionRadius, 0, 2 * Math.PI);
-            // ctx.strokeStyle = 'red';
-            // ctx.lineWidth = 2;
-            // ctx.stroke();
-        }, 500);
-
+    
+            // วาดวงกลมที่ตรงกลาง
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, regionRadius, 0, 2 * Math.PI); // วาดวงกลมที่ตำแหน่งตรงกลาง
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }, 1000);
+    
         return () => clearInterval(interval);
     }, []);
-
-
-    // ฟังก์ชันตรวจสอบความเบลอของภาพ
+    
     const isImageClear = (video) => {
         return new Promise((resolve) => {
 
@@ -181,23 +173,19 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
             let mean = 0;
             const len = data.length;
 
-            // คำนวณค่าเฉลี่ยสี
             for (let i = 0; i < len; i += 4) {
                 const gray = 0.2989 * data[i] + 0.5870 * data[i + 1] + 0.1140 * data[i + 2];
                 mean += gray;
             }
             mean /= len / 4;
 
-            // คำนวณความแปรผันของสี
             for (let i = 0; i < len; i += 4) {
                 const gray = 0.2989 * data[i] + 0.5870 * data[i + 1] + 0.1140 * data[i + 2];
                 variance += Math.pow(gray - mean, 2);
             }
             variance /= len / 4;
 
-
-
-            const BLUR_THRESHOLD = 150; // ปรับเกณฑ์ให้ตรวจจับได้ชัดเจนขึ้น
+            const BLUR_THRESHOLD = 150;
             resolve(variance > BLUR_THRESHOLD);
         });
     };
@@ -320,7 +308,7 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                 {!imageSrc ? (
                     <>
                         {/* แสดง live camera */}
-                        <div className="relative">
+                        <div className="">
                             <Webcam
                                 audio={false}
                                 ref={webcamRef}
@@ -353,18 +341,9 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                                 </p>
                             )}
                         </div>
-                        {/* <button
-                            onClick={handleCapture}
-                            className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded block mx-auto ${status === 'ใช้ได้' ? '' : 'opacity-50 cursor-not-allowed'
-                                }`}
-                            disabled={status !== 'ใช้ได้'}
-                        >
-                            ถ่ายรูป
-                        </button> */}
                     </>
                 ) : (
                     <>
-                        {/* แสดงพรีวิวภาพที่ถ่าย */}
                         <img
                             src={imageSrc}
                             alt="Preview"
@@ -398,13 +377,6 @@ const ModalFaceUpload = ({ isOpen, onClose, onSubmit, profile }) => {
                         </div>
                     </>
                 )}
-
-                {/* <button
-                    onClick={onClose}
-                    className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
-                >
-                    X
-                </button> */}
             </div>
         </div>
     );

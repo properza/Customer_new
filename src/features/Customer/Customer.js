@@ -105,7 +105,10 @@ export default function Customer() {
         setSelectedActivityImages(prevImages => prevImages.filter((_, i) => i !== index));
     };
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const handleSubmitSpecialActivity = () => {
+        setIsSubmitting(true)
         if (customerinfo?.st_tpye === "กยศ.") {
             if (!eventName || selectedActivityImages.length === 0 || !selectedScoresId) {
                 Swal.fire({
@@ -116,6 +119,7 @@ export default function Customer() {
                 });
                 return;
             }
+            setIsSubmitting(false)
         } else {
             // Check if required fields are filled for other types
             if (!eventName || selectedActivityImages.length === 0) {
@@ -127,6 +131,7 @@ export default function Customer() {
                 });
                 return;
             }
+            setIsSubmitting(false)
         }
 
         const formData = new FormData();
@@ -156,6 +161,7 @@ export default function Customer() {
                     setIsSpecialActivityModalOpen(false);
                     setSelectedActivityImages([]);
                     setEventName('');
+                    setIsSubmitting(false)
                 })
                 .catch(error => {
                     Swal.fire({
@@ -165,6 +171,7 @@ export default function Customer() {
                         timer: 1500,
                         showConfirmButton: false,
                     });
+                    setIsSubmitting(false)
                 });
         } else {
             dispatch(uploadEventData(formData))
@@ -176,6 +183,7 @@ export default function Customer() {
                         timer: 1500,
                         showConfirmButton: false,
                     });
+                    setIsSubmitting(false)
                     setIsSpecialActivityModalOpen(false);
                     setSelectedActivityImages([]);
                     setEventName('');
@@ -796,6 +804,7 @@ export default function Customer() {
                         </div>
                         {(activebtn === 'history' && activebtn2 === 'history') ?
                             <div className="overflow-auto h-[45vh]">
+                                <div className="mb-1"><i>ผลลัพธ์ ( {historyData?.totalPointsAdded === '0 ชม. 0 นาที' ? 0 : historyData?.totalPointsAdded} )</i></div>
                                 <table className='table w-full border-collapse border border-gray-200'>
                                     <thead className='bg-[#F7D4E8]'>
                                         <tr>
@@ -803,8 +812,7 @@ export default function Customer() {
                                             <th className="border px-4 py-2">กิจกรรม</th>
                                             <th className="border px-4 py-2">ประเภทกิจกรรม</th>
                                             <th className="border px-4 py-2">การเข้าร่วม</th>
-                                            <th className="border px-4 py-2">เวลาเข้าร่วม</th>
-                                            <th className="border px-4 py-2">เวลาของกิจกรรม</th>
+                                            <th className="border px-4 py-2">เวลากิจกรรม</th>
                                             <th className="border px-4 py-2">รายละเอียด</th>
                                         </tr>
                                     </thead>
@@ -817,9 +825,6 @@ export default function Customer() {
                                                     <td className="border px-4 py-2">{activity.activityName}</td>
                                                     <td className="border px-4 py-2">{activity.event_type === 'special' ? 'กยศ.' : 'ทั่วไป'}</td>
                                                     <td className="border px-4 py-2">{activity.status}</td> {/* กำลังเข้าร่วม เข้าร่วมสำเร็จ เข้าร่วมไม่สำเร็จ */}
-                                                    <td className="border px-4 py-2 text-center">
-                                                        {activity.joinedDurationString}
-                                                    </td>
                                                     <td className='border px-4 py-2 text-center'>
                                                         {activity.activityDurationString}
                                                     </td>
@@ -868,6 +873,7 @@ export default function Customer() {
                             :
 
                             <div className="overflow-auto h-[45vh]">
+                                {customerinfo?.st_tpye === "กยศ." && <div className="mb-1"><i>ผลลัพธ์ ( {specialEvent?.meta?.total_score !== 0 ? `${specialEvent?.meta?.total_score} ชม.` : specialEvent?.meta?.total_score })</i></div>}
                                 <table className='table w-full border-collapse border border-gray-200'>
                                     <thead className='bg-[#F7D4E8]'>
                                         {customerinfo?.st_tpye !== "กยศ." ? <>
@@ -883,6 +889,7 @@ export default function Customer() {
                                                     <th className="border px-4 py-2">ลำดับ</th>
                                                     <th className="border px-4 py-2">กิจกรรม</th>
                                                     <th className="border px-4 py-2">ประเภท</th>
+                                                    <th className="border px-4 py-2">ชม. สะสม</th>
                                                     <th className="border px-4 py-2">วันที่สร้าง</th>
                                                     <th className="border px-4 py-2">รูปภาพ</th>
                                                     <th className="border px-4 py-2">สถานะ</th>
@@ -909,11 +916,12 @@ export default function Customer() {
                                                 specialEvent.data?.map((activity, index) => (
                                                     <tr key={activity.id}>
                                                         <td className="border px-4 py-2">{index + 1}</td>
-                                                        <td className="border px-4 py-2">{activity.event_name}</td>
-                                                        <td className="border px-4 py-2">{activity.scores_type}</td>
-                                                        <td className="border px-4 py-2">{activity.created_at ? format(new Date(activity.created_at), "d MMM yyyy HH:mm", { locale: th }) : activity.status}</td>
-                                                        <td className="border px-4 py-2" onClick={() => handleImageClick(activity.images, 0)}> <div className="w-6 h-6">{image}</div></td>
-                                                        <td className="border px-4 py-2 whitespace-nowrap text-center">{activity.status === 'อนุมัติ' ? <p className='p-1 rounded bg-green-500 text-white'>{activity.status}</p> : activity.status === 'รอดำเนินการ' ? <p className='p-1 rounded bg-orange-400 text-white'>{activity.status}</p> : <p className='p-1 rounded bg-red-400 text-white'>{activity.status}</p>}</td>
+                                                        <td className="border px-4 py-2">{activity?.event_name}</td>
+                                                        <td className="border px-4 py-2 text-center">{activity?.scores_type}</td>
+                                                        <td className="border px-4 py-2 text-center">{activity?.status === 'อนุมัติ' ? activity.scores_earn : '-'}</td>
+                                                        <td className="border px-4 py-2">{activity?.created_at ? format(new Date(activity?.created_at), "d MMM yyyy HH:mm", { locale: th }) : activity?.status}</td>
+                                                        <td className="border px-4 py-2" onClick={() => handleImageClick(activity?.images, 0)}> <div className="w-6 h-6">{image}</div></td>
+                                                        <td className="border px-4 py-2 whitespace-nowrap text-center">{activity?.status === 'อนุมัติ' ? <p className='p-1 rounded bg-green-500 text-white'>{activity?.status}</p> : activity?.status === 'รอดำเนินการ' ? <p className='p-1 rounded bg-orange-400 text-white'>{activity.status}</p> : <p className='p-1 rounded bg-red-400 text-white'>{activity.status}</p>}</td>
                                                     </tr>
                                                 )) :
                                                 <tr>
@@ -1279,8 +1287,9 @@ export default function Customer() {
                             <button
                                 onClick={handleSubmitSpecialActivity}
                                 className="bg-green-500 text-white px-4 py-2 rounded-md"
+                                disabled={isSubmitting}
                             >
-                                ยืนยัน
+                                {isSubmitting ? "กำลังบันทึก..." : "ยืนยัน"}
                             </button>
                         </div>
                     </div>

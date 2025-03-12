@@ -10,7 +10,7 @@ import {
     signin, getrewarddata, gethistoryreward,
     redeemReward, usedRewards, getCloud,
     uploadEventData, uploadspecialData, getscroesData,
-    getspecialEvent
+    getspecialEvent , getuser
 } from '../common/userSlice';
 import classNames from 'classnames';
 import Modal from './Modal/Modal';
@@ -160,6 +160,7 @@ export default function Customer() {
                     setIsSpecialActivityModalOpen(false);
                     setSelectedActivityImages([]);
                     setEventName('');
+                    dispatch(getspecialEvent({ page: currentPage, userID: profile.userId }));
                 })
                 .catch(error => {
                     Swal.fire({
@@ -184,6 +185,7 @@ export default function Customer() {
                     setIsSpecialActivityModalOpen(false);
                     setSelectedActivityImages([]);
                     setEventName('');
+                    dispatch(getCloud({ page: currentPage, userID: profile.userId }));
                 })
                 .catch(error => {
                     Swal.fire({
@@ -307,6 +309,7 @@ export default function Customer() {
                         });
                         dispatch(getrewarddata({ page: currentPage, userID: profile.userId }));
                         dispatch(gethistoryreward({ page: currentPage, userID: profile.userId }));
+                        dispatch(getuser({profile}));
                     })
                     .catch((error) => {
                         Swal.fire({
@@ -821,7 +824,7 @@ export default function Customer() {
                                                     <td className="border px-4 py-2">{index + 1}</td>
                                                     <td className="border px-4 py-2">{activity.activityName}</td>
                                                     <td className="border px-4 py-2">{activity.event_type === 'special' ? 'กยศ.' : 'ทั่วไป'}</td>
-                                                    <td className="border px-4 py-2">{activity.status}</td> {/* กำลังเข้าร่วม เข้าร่วมสำเร็จ เข้าร่วมไม่สำเร็จ */}
+                                                    <td className="border px-4 py-2">{activity.status}</td>
                                                     <td className='border px-4 py-2 text-center'>
                                                         {activity.activityDurationString}
                                                     </td>

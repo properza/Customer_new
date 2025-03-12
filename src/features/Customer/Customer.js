@@ -10,7 +10,7 @@ import {
     signin, getrewarddata, gethistoryreward,
     redeemReward, usedRewards, getCloud,
     uploadEventData, uploadspecialData, getscroesData,
-    getspecialEvent , getuser
+    getspecialEvent, getuser
 } from '../common/userSlice';
 import classNames from 'classnames';
 import Modal from './Modal/Modal';
@@ -67,21 +67,21 @@ export default function Customer() {
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const referralCode = params.get('referral');
-      
+
         let rawCheck = params.get('check');
-      
+
         if (rawCheck && rawCheck.includes('?')) {
-          rawCheck = rawCheck.split('?')[0];
+            rawCheck = rawCheck.split('?')[0];
         }
-      
+
         // จากนั้นจึง set ลง state
         if (referralCode && rawCheck) {
-          setReferral(referralCode);
-          setCheck(rawCheck);
+            setReferral(referralCode);
+            setCheck(rawCheck);
         }
-      }, [location.search]);
-      
-    
+    }, [location.search]);
+
+
     const handleImageChange = (event) => {
         const files = Array.from(event.target.files);
         if (selectedActivityImages.length + files.length > 10) {
@@ -236,7 +236,7 @@ export default function Customer() {
             dispatch(getspecialEvent({ page: currentPage, userID: profile.userId }));
         }
     }, [dispatch, profile, currentPage]);
-    
+
     useEffect(() => {
         if (customerinfo) {
             const hasRequiredFields = customerinfo.first_name && customerinfo.last_name && customerinfo.user_code && customerinfo.group_st && customerinfo.branch_st && customerinfo.tpye_st;
@@ -309,7 +309,7 @@ export default function Customer() {
                         });
                         dispatch(getrewarddata({ page: currentPage, userID: profile.userId }));
                         dispatch(gethistoryreward({ page: currentPage, userID: profile.userId }));
-                        dispatch(getuser({profile}));
+                        dispatch(getuser({ profile }));
                     })
                     .catch((error) => {
                         Swal.fire({
@@ -435,14 +435,14 @@ export default function Customer() {
     const base64ToFile = (base64String, fileName) => {
         const byteString = atob(base64String.split(',')[1]); // แยกส่วน base64
         const mimeString = base64String.split(',')[0].split(':')[1].split(';')[0]; // รับประเภท MIME
-    
+
         // สร้าง Uint8Array เพื่อเก็บข้อมูล byte
         const arrayBuffer = new ArrayBuffer(byteString.length);
         const uintArray = new Uint8Array(arrayBuffer);
         for (let i = 0; i < byteString.length; i++) {
             uintArray[i] = byteString.charCodeAt(i);
         }
-    
+
         // แปลงเป็น File object
         return new File([uintArray], fileName, { type: mimeString });
     };
@@ -485,7 +485,7 @@ export default function Customer() {
                 // เพิ่ม customerLatitude และ customerLongitude ไปใน formData
                 formData.append("customerLatitude", customerLatitude);
                 formData.append("customerLongitude", customerLongitude);
-                formData.append("check",check);
+                formData.append("check", check);
 
                 // เริ่มทำการสมัครสมาชิกหลังจากได้พิกัด
                 submitFormData(formData);
@@ -873,7 +873,7 @@ export default function Customer() {
                             :
 
                             <div className="overflow-auto h-[45vh]">
-                                {customerinfo?.st_tpye === "กยศ." && <div className="mb-1"><i>ผลลัพธ์ ( {specialEvent?.meta?.total_score !== 0 ? `${specialEvent?.meta?.total_score} ชม.` : specialEvent?.meta?.total_score })</i></div>}
+                                {customerinfo?.st_tpye === "กยศ." && <div className="mb-1"><i>ผลลัพธ์ ( {specialEvent?.meta?.total_score !== 0 ? `${specialEvent?.meta?.total_score} ชม.` : specialEvent?.meta?.total_score})</i></div>}
                                 <table className='table w-full border-collapse border border-gray-200'>
                                     <thead className='bg-[#F7D4E8]'>
                                         {customerinfo?.st_tpye !== "กยศ." ? <>
@@ -1110,7 +1110,7 @@ export default function Customer() {
                 {/* Referral Modal */}
                 <Modal isOpen={isReferralModalOpen} onClose={handleDeclineReferral}>
                     <div className="p-4">
-                        <h2 className="text-lg font-bold mb-4">{check === 'in' ?'เข้าร่วมกิจกรรม':'ลงชื่อออกจากกิจกรรม'}</h2>
+                        <h2 className="text-lg font-bold mb-4">{check === 'in' ? 'เข้าร่วมกิจกรรม' : 'ลงชื่อออกจากกิจกรรม'}</h2>
                         <p>กิจกรรมรหัส : <strong>{referral}</strong></p>
                         {!isCameraOpen ? (
                             <button
@@ -1144,7 +1144,7 @@ export default function Customer() {
                                     </button>
                                 </div>
                             </div>
-                        )} 
+                        )}
 
                         {/* แสดงภาพที่ถ่ายทั้งหมด */}
                         {selectedImages.length > 0 && (
@@ -1177,7 +1177,7 @@ export default function Customer() {
                                     ปฏิเสธ
                                 </button>
                                 <button
-                                    onClick={() => handleAcceptReferral(referral , check)}
+                                    onClick={() => handleAcceptReferral(referral, check)}
                                     className="bg-green-500 text-white px-4 py-2 rounded-md"
                                     disabled={isUploading}
                                 >
@@ -1252,7 +1252,15 @@ export default function Customer() {
                             capture="camera"
                             onChange={handleImageChange}
                             className="mb-4 w-full"
+                            style={{ display: 'none' }} // ซ่อน input file
                         />
+
+                        <button
+                            onClick={() => document.querySelector('input[type="file"]').click()} // เปิดกล้องเมื่อคลิก
+                            className="bg-blue-500 text-white px-4 py-2 rounded-md w-full"
+                        >
+                            เปิดกล้อง
+                        </button>
 
                         {/* แสดงภาพตัวอย่าง */}
                         {selectedActivityImages.length > 0 && (

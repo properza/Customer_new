@@ -119,7 +119,6 @@ export default function Customer() {
                 });
                 return;
             }
-            setIsSubmitting(false)
         } else {
             // Check if required fields are filled for other types
             if (!eventName || selectedActivityImages.length === 0) {
@@ -161,7 +160,6 @@ export default function Customer() {
                     setIsSpecialActivityModalOpen(false);
                     setSelectedActivityImages([]);
                     setEventName('');
-                    setIsSubmitting(false)
                 })
                 .catch(error => {
                     Swal.fire({
@@ -171,7 +169,6 @@ export default function Customer() {
                         timer: 1500,
                         showConfirmButton: false,
                     });
-                    setIsSubmitting(false)
                 });
         } else {
             dispatch(uploadEventData(formData))

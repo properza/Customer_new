@@ -296,12 +296,12 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                 onClick={(e) => e.stopPropagation()}
             >
                 <h2 className="text-lg font-bold mb-4">สแกนใบหน้าเพื่อยืนยัน</h2>
-                {icon && (
+                {/* {icon && (
                     <div className={`flex justify-center flex-col gap-1 items-center ${icon === 'success' ? 'text-green-500' : 'text-red-500'}`}>
                         <div className="w-6 h-6">{icon === 'success' ? passIcon : UnpassIcon }</div>
                         <p className="ml-2">{iconMessage}</p>
                     </div>
-                )}
+                )} */}
 
                 {!isBrowserSupported ? (
                     <div className="text-center">

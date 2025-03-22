@@ -233,7 +233,7 @@ function ModalFaceScan({ isOpen, onClose, faceUrl, onSuccess }) {
                     icon: 'success',
                     title: 'ยืนยันใบหน้าสำเร็จ!',
                     showConfirmButton: false,
-                    timer: 1500,
+                    timer: 5000,
                     toast: true,
                     position: 'top-end',
                     timerProgressBar: true

@@ -769,7 +769,7 @@ export default function Customer() {
                             {icons}
                             <p className='text-white font-medium text-base'>คะแนน : {customerinfo?.total_point || 0}</p>
                         </div>
-                        <button className='bg-[#FF9C00] text-white rounded-md px-2 py-1' onClick={() => setIsSpecialActivityModalOpen(true)} > {customerinfo?.st_tpye !== "กยศ." ? "กิจกรรมพิเศษ" : "กิจกรรมจิตอาสา"}</button>
+                        <button className='bg-[#FF9C00] text-white rounded-md px-2 py-1' onClick={() => setIsSpecialActivityModalOpen(true)} > {customerinfo?.st_tpye !== "กยศ." ? "เพิ่มกิจกรรมพิเศษ" : "เพิ่มกิจกรรมจิตอาสา"}</button>
                     </div>
                 </div>
             </div>
